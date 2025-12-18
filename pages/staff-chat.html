@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Chat Dashboard</title>
+    <link rel="stylesheet" href="../css/staff-chat.css">
+</head>
+<body>
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <div>
+                <h1>💬 Chat Support Dashboard</h1>
+                <p>Manage and respond to resident inquiries</p>
+                <p id="staff-name" class="staff-info">Loading...</p>
+            </div>
+            <button id="logout-btn" class="logout-btn">🚪 Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card" style="--card-color: #FFA726;">
+                <div class="stat-header">
+                    <span class="stat-icon">⏳</span>
+                    <h3>Waiting</h3>
+                </div>
+                <div class="stat-value" id="waiting-count">0</div>
+                <div class="stat-subtitle">Pending response</div>
+            </div>
+
+            <div class="stat-card" style="--card-color: #4CAF50;">
+                <div class="stat-header">
+                    <span class="stat-icon">💬</span>
+                    <h3>Active</h3>
+                </div>
+                <div class="stat-value" id="active-count">0</div>
+                <div class="stat-subtitle">In conversation</div>
+            </div>
+
+            <div class="stat-card" style="--card-color: #667eea;">
+                <div class="stat-header">
+                    <span class="stat-icon">🤖</span>
+                    <h3>Bot Only</h3>
+                </div>
+                <div class="stat-value" id="bot-count">0</div>
+                <div class="stat-subtitle">Auto-handled</div>
+            </div>
+
+            <div class="stat-card" style="--card-color: #718096;">
+                <div class="stat-header">
+                    <span class="stat-icon">✓</span>
+                    <h3>Resolved</h3>
+                </div>
+                <div class="stat-value" id="closed-count">0</div>
+                <div class="stat-subtitle">Closed chats</div>
+            </div>
+        </div>
+
+        <!-- Main Chat Interface -->
+        <div class="chat-interface">
+            <!-- Chat List Sidebar -->
+            <div class="chat-list-sidebar">
+                <div class="sidebar-header">
+                    <h3>📋 Conversations</h3>
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-filter="waiting">
+                            Waiting <span class="tab-badge" id="tab-waiting">0</span>
+                        </button>
+                        <button class="filter-tab" data-filter="active">
+                            Active <span class="tab-badge" id="tab-active">0</span>
+                        </button>
+                        <button class="filter-tab" data-filter="bot">
+                            Bot <span class="tab-badge" id="tab-bot">0</span>
+                        </button>
+                        <button class="filter-tab" data-filter="closed">
+                            Closed <span class="tab-badge" id="tab-closed">0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" id="search-chats" placeholder="🔍 Search residents...">
+                </div>
+
+                <div id="chat-list" class="chat-list">
+                    <!-- Chat items will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Chat Conversation Area -->
+            <div class="chat-conversation">
+                <div id="empty-state" class="empty-state">
+                    <div class="empty-icon">💬</div>
+                    <h3>Select a conversation</h3>
+                    <p>Choose a chat from the left to start responding</p>
+                </div>
+
+                <div id="chat-area" class="chat-area" style="display: none;">
+                    <!-- Chat Header -->
+                    <div class="chat-header">
+                        <div class="resident-info">
+                            <div class="resident-avatar">👤</div>
+                            <div>
+                                <h3 id="resident-name">Resident Name</h3>
+                                <p id="resident-email">email@example.com</p>
+                                <span id="chat-status-badge" class="status-badge">Waiting</span>
+                            </div>
+                        </div>
+                            <!-- In the chat-header section, update the chat-actions div: -->
+                            <div class="chat-actions">
+                                <button id="take-over-btn" class="btn btn-primary" style="display: none;">
+                                    👨‍💼 Take Over Chat
+                                </button>
+                                <button id="transfer-chat-btn" class="btn btn-warning" style="display: none;">
+                                    🔄 Transfer Chat
+                                </button>
+                                <button id="resolve-chat-btn" class="btn btn-success">
+                                    ✓ Mark as Resolved
+                                </button>
+                                <button id="delete-chat-btn" class="btn btn-danger" style="display: none;">
+                                    🗑️ Delete Chat
+                                </button>
+                            </div>
+
+                            <!-- Add this line after resident-info div and before chat-actions: -->
+                            <p id="chat-owner-info" style="display: none; font-size: 12px; color: #718096; font-style: italic;"></p>
+                    </div>
+
+                    <!-- Messages Area -->
+                    <div id="messages-area" class="messages-area">
+                        <!-- Messages will be loaded here -->
+                    </div>
+
+                    <!-- Message Input -->
+                    <div class="message-input-container">
+                        <textarea 
+                            id="message-input" 
+                            placeholder="Type your message... (Shift + Enter for new line, Enter to send)"
+                            rows="1"
+                        ></textarea>
+                        <button id="send-message-btn" class="send-btn">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a href="#" id="back-button">Back to Dashboard</a>
+    </div>
+`
+    <script type="module" src="../js/staff-chat.js"></script>
+</body>
+</html>

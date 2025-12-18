@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Reports Management</title>
+    
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-storage.js"></script>
+    
+    <link rel="stylesheet" href="../css/staff-incident.css">
+</head>
+<body>
+    <div class="container">
+<a href="#" id="back-button" class="back-link">← Back to Dashboard</a>
+        
+        <h1>📋 Incident Reports Management</h1>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" data-tab="unassigned">
+                📨 Unassigned
+                <span class="report-count" id="unassignedCount">0</span>
+            </button>
+            <button class="tab-btn" data-tab="my-reports">
+                👤 My Reports
+                <span class="report-count" id="myReportsCount">0</span>
+            </button>
+            <button class="tab-btn" data-tab="all-reports" id="allReportsTab">
+                📊 All Reports
+                <span class="report-count" id="allReportsCount">0</span>
+            </button>
+        </div>
+
+        <!-- Tab Content Container -->
+        <div class="tab-content-wrapper">
+            
+            <!-- Unassigned Reports Tab -->
+            <div id="unassignedTab" class="tab-content active">
+                <div class="tab-header">
+                    <h2>📨 Unassigned Reports</h2>
+                    <p class="tab-description">Reports waiting to be assigned to a staff member</p>
+                </div>
+
+                <!-- Status Filter Chips -->
+                <div class="status-filters">
+                    <button class="filter-chip active" data-status="all" data-context="unassigned">
+                        All
+                        <span class="chip-count" id="unassigned-countAll">0</span>
+                    </button>
+                    <button class="filter-chip" data-status="submitted" data-context="unassigned">
+                        📨 New
+                        <span class="chip-count" id="unassigned-countSubmitted">0</span>
+                    </button>
+                    <button class="filter-chip" data-status="acknowledged" data-context="unassigned">
+                        👀 Acknowledged
+                        <span class="chip-count" id="unassigned-countAcknowledged">0</span>
+                    </button>
+                </div>
+
+                <!-- Type Filter -->
+                <div class="type-filter-section">
+                    <label>Filter by Type:</label>
+                    <select id="unassignedTypeFilter" class="type-select">
+                        <option value="all">All Types</option>
+                        <option value="noise">Noise Complaint</option>
+                        <option value="dispute">Neighborhood Dispute</option>
+                        <option value="vandalism">Vandalism</option>
+                        <option value="theft">Theft</option>
+                        <option value="public_safety">Public Safety</option>
+                        <option value="infrastructure">Infrastructure</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <button id="refreshUnassigned" class="refresh-btn">🔄 Refresh</button>
+                </div>
+
+                <div id="unassignedList" class="reports-container"></div>
+            </div>
+
+            <!-- My Reports Tab -->
+            <div id="myReportsTab" class="tab-content">
+                <div class="tab-header">
+                    <h2>👤 My Assigned Reports</h2>
+                    <p class="tab-description">Reports you are currently handling</p>
+                </div>
+
+                <!-- Status Filter Chips -->
+                <div class="status-filters">
+                    <button class="filter-chip active" data-status="all" data-context="my">
+                        All
+                        <span class="chip-count" id="my-countAll">0</span>
+                    </button>
+                    <button class="filter-chip" data-status="acknowledged" data-context="my">
+                        👀 Acknowledged
+                        <span class="chip-count" id="my-countAcknowledged">0</span>
+                    </button>
+                    <button class="filter-chip" data-status="in-progress" data-context="my">
+                        🔄 In Progress
+                        <span class="chip-count" id="my-countInProgress">0</span>
+                    </button>
+                    <button class="filter-chip" data-status="resolved" data-context="my">
+                        ✅ Resolved
+                        <span class="chip-count" id="my-countResolved">0</span>
+                    </button>
+                    <button class="filter-chip" data-status="closed" data-context="my">
+                        🔒 Closed
+                        <span class="chip-count" id="my-countClosed">0</span>
+                    </button>
+                </div>
+
+                <!-- Type Filter -->
+                <div class="type-filter-section">
+                    <label>Filter by Type:</label>
+                    <select id="myReportsTypeFilter" class="type-select">
+                        <option value="all">All Types</option>
+                        <option value="noise">Noise Complaint</option>
+                        <option value="dispute">Neighborhood Dispute</option>
+                        <option value="vandalism">Vandalism</option>
+                        <option value="theft">Theft</option>
+                        <option value="public_safety">Public Safety</option>
+                        <option value="infrastructure">Infrastructure</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <button id="refreshMyReports" class="refresh-btn">🔄 Refresh</button>
+                </div>
+
+                <div id="myReportsList" class="reports-container"></div>
+            </div>
+
+            <!-- All Reports Tab (Admin Only) -->
+            <div id="allReportsTabContent" class="tab-content">
+                <div class="tab-header">
+                    <h2>📊 All Reports (Admin View)</h2>
+                    <p class="tab-description">Complete overview of all incident reports</p>
+                </div>
+
+                <!-- Status Filter Chips -->
+                <div class="status-filters">
+                    <button class="filter-chip active" data-status="all" data-context="all">
+                        All
+                        <span class="chip-count" id="all-countAll">0</span>
+                    </button>
+                    <button class="filter-chip" data-status="submitted" data-context="all">
+                        📨 New
+                        <span class="chip-count" id="all-countSubmitted">0</span>
+                    </button>
+                    <button class="filter-chip" data-status="acknowledged" data-context="all">
+                        👀 Acknowledged
+                        <span class="chip-count" id="all-countAcknowledged">0</span>
+                    </button>
+                    <button class="filter-chip" data-status="in-progress" data-context="all">
+                        🔄 In Progress
+                        <span class="chip-count" id="all-countInProgress">0</span>
+                    </button>
+                    <button class="filter-chip" data-status="resolved" data-context="all">
+                        ✅ Resolved
+                        <span class="chip-count" id="all-countResolved">0</span>
+                    </button>
+                    <button class="filter-chip" data-status="closed" data-context="all">
+                        🔒 Closed
+                        <span class="chip-count" id="all-countClosed">0</span>
+                    </button>
+                    <button class="filter-chip" data-status="rejected" data-context="all">
+                        ❌ Rejected
+                        <span class="chip-count" id="all-countRejected">0</span>
+                    </button>
+                    <button class="filter-chip" data-status="false-report" data-context="all">
+                        ⚠️ False
+                        <span class="chip-count" id="all-countFalse">0</span>
+                    </button>
+                </div>
+
+                <!-- Type Filter -->
+                <div class="type-filter-section">
+                    <label>Filter by Type:</label>
+                    <select id="allReportsTypeFilter" class="type-select">
+                        <option value="all">All Types</option>
+                        <option value="noise">Noise Complaint</option>
+                        <option value="dispute">Neighborhood Dispute</option>
+                        <option value="vandalism">Vandalism</option>
+                        <option value="theft">Theft</option>
+                        <option value="public_safety">Public Safety</option>
+                        <option value="infrastructure">Infrastructure</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <button id="refreshAllReports" class="refresh-btn">🔄 Refresh</button>
+                </div>
+
+                <div id="allReportsList" class="reports-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Details Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeReportModal()">&times;</span>
+            <h2>Report Details</h2>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- User Restriction Modal -->
+    <div id="restrictionModal" class="modal">
+        <div class="modal-content">
+            <span class="close-restriction" onclick="closeRestrictionModal()">&times;</span>
+            <h2>Restrict User Reporting</h2>
+            <div id="restrictionModalBody">
+                <form id="restrictionForm">
+                    <div class="form-group">
+                        <label>User Email:</label>
+                        <input type="text" id="restrictUserEmail" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Restriction Duration:</label>
+                        <select id="restrictionDuration" required>
+                            <option value="7">7 Days</option>
+                            <option value="14">14 Days</option>
+                            <option value="30">30 Days</option>
+                            <option value="90">90 Days</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Reason:</label>
+                        <textarea id="restrictionReason" required placeholder="Explain reason for restriction..."></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Apply Restriction</button>
+                        <button type="button" class="btn-secondary" onclick="closeRestrictionModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Report Modal -->
+    <div id="transferModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeTransferModal()">&times;</span>
+            <h2>Transfer Report</h2>
+            <div id="transferModalBody">
+                <form id="transferForm">
+                    <div class="form-group">
+                        <label>Report ID:</label>
+                        <input type="text" id="transferReportId" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Transfer to Staff Member:</label>
+                        <select id="transferToStaff" required>
+                            <option value="">Select staff member...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Transfer Reason/Notes:</label>
+                        <textarea id="transferReason" required placeholder="Explain why you're transferring this report..."></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Transfer Report</button>
+                        <button type="button" class="btn-secondary" onclick="closeTransferModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Lightbox -->
+    <div id="imageLightbox" class="lightbox">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <button class="lightbox-prev" onclick="changeLightboxImage(-1)">&#10094;</button>
+        <img id="lightboxImage" class="lightbox-image" src="" alt="Full size image">
+        <button class="lightbox-next" onclick="changeLightboxImage(1)">&#10095;</button>
+        <div id="lightboxCounter" class="lightbox-counter"></div>
+    </div>
+    <!-- Custom Modal System -->
+    <div id="customModalOverlay" class="custom-modal-overlay">
+        <div id="customModalDialog" class="custom-modal-dialog">
+            <div class="custom-modal-header">
+                <span id="customModalIcon" class="custom-modal-icon"></span>
+                <h3 id="customModalTitle" class="custom-modal-title"></h3>
+            </div>
+            <div id="customModalBody" class="custom-modal-body"></div>
+            <div id="customModalFooter" class="custom-modal-footer"></div>
+        </div>
+    </div>
+    
+    <script type="module" src="../firebase-config.js"></script>
+    <script type="module" src="../js/staff-incident.js"></script>
+</body>
+</html>

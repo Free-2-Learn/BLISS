@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archived Residents - History</title>
+    <link rel="stylesheet" href="../css/resident-history.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="dashboard-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-archive"></i>
+                <h1>Archives</h1>
+            </div>
+            <div class="user-info">
+                <div class="avatar">👤</div>
+                <div class="user-details">
+                    <p class="user-name" id="user-welcome">User</p>
+                    <p class="user-role" id="user-role">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" id="back-button" class="nav-item active">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+            <a href="residents.html" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Active Residents</span>
+            </a>
+            <a href="resident-history.html" class="nav-item">
+                <i class="fas fa-archive"></i>
+                <span>Archived Residents</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="archive-notice">
+                <i class="fas fa-info-circle"></i>
+                <p>Archived residents can be restored anytime</p>
+            </div>
+            <a href="#" id="logout-button" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-header">
+            <div>
+                <h2>Archived Residents</h2>
+                <p class="welcome-text">View and restore previously deleted residents</p>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-archive"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Total Archived</h3>
+                    <p class="stat-value" id="total-archived">
+                        <span class="loading-spinner">⏳</span>
+                    </p>
+                    <span class="stat-change">In archive</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Recently Archived</h3>
+                    <p class="stat-value" id="recent-archived">
+                        <span class="loading-spinner">⏳</span>
+                    </p>
+                    <span class="stat-change">Last 30 days</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                    <i class="fas fa-undo"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Restorable</h3>
+                    <p class="stat-value" id="restorable-count">
+                        <span class="loading-spinner">⏳</span>
+                    </p>
+                    <span class="stat-change">Ready to restore</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="search-section">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-history" placeholder="Search by name, email, or contact number...">
+            </div>
+            <button class="btn-primary" onclick="window.location.reload()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+
+        <!-- Archived Residents Table -->
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Contact</th>
+                        <th>Address</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Civil Status</th>
+                        <th>Occupation</th>
+                        <th>Archived Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body">
+                    <tr>
+                        <td colspan="11" style="text-align: center; padding: 60px;">
+                            <div class="loading-state">
+                                <i class="fas fa-spinner fa-spin" style="font-size: 48px; color: #667eea; margin-bottom: 20px;"></i>
+                                <p style="font-size: 18px; color: #718096;">Loading archived residents...</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <h3><i class="fas fa-history"></i> Recent Archive Activity</h3>
+            <div class="activity-list" id="activity-list">
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: #667eea;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <div class="activity-details">
+                        <p class="activity-title">Loading recent activity...</p>
+                        <p class="activity-desc">Please wait</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Restore Confirmation Modal -->
+<div id="restore-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-undo"></i> Restore Resident</h3>
+            <button class="close-modal" onclick="closeRestoreModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="restore-modal-body">
+            <!-- Content will be dynamically inserted -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeRestoreModal()">Cancel</button>
+            <button class="btn-primary" id="confirm-restore-btn">
+                <i class="fas fa-undo"></i> Restore
+            </button>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="../js/resident-history.js"></script>
+
+</body>
+</html>

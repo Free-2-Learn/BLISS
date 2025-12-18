@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile</title>
+    <link rel="stylesheet" href="../css/profile.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="profile-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-user-circle"></i>
+                <h1>My Profile</h1>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="dashboard-resident.html" class="nav-item">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+            <a href="#personal-info" class="nav-item active">
+                <i class="fas fa-user"></i>
+                <span>Personal Info</span>
+            </a>
+            <a href="#security" class="nav-item">
+                <i class="fas fa-lock"></i>
+                <span>Security</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#" id="logout-button" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <div class="content-header">
+            <div>
+                <h2>Welcome, <span id="user-name">Loading...</span></h2>
+                <p class="welcome-text">Manage your personal information and security settings</p>
+            </div>
+            <button id="edit-profile-btn" class="btn-primary">
+                <i class="fas fa-edit"></i> Edit Profile
+            </button>
+        </div>
+
+        <!-- Profile Card -->
+        <div class="profile-card">
+            <div class="profile-avatar-section">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-header-info">
+                    <h3 id="profile-full-name">Loading...</h3>
+                    <p id="profile-email">email@example.com</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Information Section -->
+        <div class="info-section" id="personal-info">
+            <div class="section-header">
+                <h3><i class="fas fa-user"></i> Personal Information</h3>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>First Name</label>
+                    <p id="resident-first-name">-</p>
+                </div>
+                <div class="info-item">
+                    <label>Middle Name</label>
+                    <p id="resident-middle-name">-</p>
+                </div>
+                <div class="info-item">
+                    <label>Last Name</label>
+                    <p id="resident-last-name">-</p>
+                </div>
+                <div class="info-item">
+                    <label>Gender</label>
+                    <p id="resident-gender">-</p>
+                </div>
+                <div class="info-item">
+                    <label>Contact Number</label>
+                    <p id="resident-contact-number">-</p>
+                </div>
+                <div class="info-item">
+                    <label>Email Address</label>
+                    <p id="resident-email">-</p>
+                </div>
+                <div class="info-item full-width">
+                    <label>Address</label>
+                    <p id="resident-address">-</p>
+                </div>
+                <div class="info-item">
+                    <label>Occupation</label>
+                    <p id="resident-occupation">-</p>
+                </div>
+                <div class="info-item">
+                    <label>Education</label>
+                    <p id="resident-education">-</p>
+                </div>
+                <div class="info-item">
+                    <label>Special Categories</label>
+                    <p id="resident-special-categories">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Section -->
+        <div class="info-section" id="security">
+            <div class="section-header">
+                <h3><i class="fas fa-lock"></i> Security Settings</h3>
+            </div>
+            <div class="security-content">
+                <div class="security-item">
+                    <div class="security-info">
+                        <h4>Password</h4>
+                        <p>Keep your account secure by updating your password regularly</p>
+                    </div>
+                    <button id="change-password-btn" class="btn-secondary">
+                        <i class="fas fa-key"></i> Change Password
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="edit-profile-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-edit"></i> Edit Profile</h3>
+            <button class="close-modal" id="close-edit-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="edit-profile-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="edit-first-name">First Name</label>
+                        <input type="text" id="edit-first-name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-middle-name">Middle Name</label>
+                        <input type="text" id="edit-middle-name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-last-name">Last Name</label>
+                        <input type="text" id="edit-last-name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-gender">Gender</label>
+                        <select id="edit-gender" required>
+                            <option value="">Select</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="edit-contact-number">Contact Number</label>
+                        <input type="text" id="edit-contact-number" required placeholder="+63 XXXXXXXXXX">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="edit-address">House Number / Purok</label>
+                        <input type="text" id="edit-address" required placeholder="e.g., House 123, Purok 5">
+                        <small style="color: #718096; font-size: 12px; margin-top: 4px;">
+                            Current Location: Lipay, Villasis, Pangasinan
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-occupation">Occupation</label>
+                        <input type="text" id="edit-occupation" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-education">Education</label>
+                        <select id="edit-education" required>
+                            <option value="Elementary">Elementary</option>
+                            <option value="High School">High School</option>
+                            <option value="College">College</option>
+                            <option value="Vocational">Vocational</option>
+                            <option value="Postgraduate">Postgraduate</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-special-categories">Special Categories</label>
+                        <select id="edit-special-categories">
+                            <option value="None">None</option>
+                            <option value="Senior Citizen">Senior Citizen</option>
+                            <option value="PWD">PWD</option>
+                            <option value="4Ps Beneficiary">4Ps Beneficiary</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancel-edit-btn">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="change-password-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-key"></i> Change Password</h3>
+            <button class="close-modal" id="close-change-password-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="change-password-form">
+                <div class="form-group">
+                    <label for="current-password">Current Password</label>
+                    <input type="password" id="current-password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm-password">Confirm New Password</label>
+                    <input type="password" id="confirm-password" required>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancel-password-btn">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-check"></i> Change Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Chat Button -->
+<button id="chat-button" class="chat-button">
+    <svg viewBox="0 0 24 24">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+    </svg>
+    <span id="notification-badge" class="notification-badge">1</span>
+</button>
+
+<!-- Chat Window -->
+<div id="chat-window" class="chat-window">
+    <div class="chat-header">
+        <div class="chat-header-info">
+            <h3>🏛️ Barangay Assistant</h3>
+            <p>Here to help you 24/7</p>
+            <div class="chat-status">
+                <span class="status-dot"></span>
+                <span>Online</span>
+            </div>
+        </div>
+        <button id="minimize-chat" class="minimize-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                <path d="M19 13H5v-2h14v2z"/>
+            </svg>
+        </button>
+    </div>
+
+    <div id="chat-body" class="chat-body">
+        <div id="typing-indicator" class="typing-indicator message bot">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-footer">
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                id="chat-input" 
+                class="chat-input" 
+                placeholder="Type your message..."
+                autocomplete="off"
+            >
+            <button id="send-btn" class="send-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="../js/profile.js"></script>
+<script type="module" src="../js/chatbot.js"></script>
+
+</body>
+</html>

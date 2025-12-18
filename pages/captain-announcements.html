@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements Dashboard</title>
+    <link rel="stylesheet" href="../css/announcements.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-bullhorn"></i>
+                <h1>Announcements</h1>
+            </div>
+            <div class="user-info">
+                <div class="avatar">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="user-details">
+                    <p class="user-name" id="user-welcome">Admin</p>
+                    <p class="user-role" id="user-role">Staff</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" id="back-button" class="nav-item">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="stats-summary">
+                <div class="stat-mini">
+                    <i class="fas fa-bullhorn"></i>
+                    <div>
+                        <span class="stat-mini-value" id="total-announcements">0</span>
+                        <span class="stat-mini-label">Total</span>
+                    </div>
+                </div>
+                <div class="stat-mini">
+                    <i class="fas fa-calendar-day"></i>
+                    <div>
+                        <span class="stat-mini-value" id="today-announcements">0</span>
+                        <span class="stat-mini-label">Today</span>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="#" id="logout-button" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <div class="content-header">
+            <div>
+                <h2><i class="fas fa-bullhorn"></i> Manage Announcements</h2>
+                <p class="welcome-text">Create and manage community announcements</p>
+            </div>
+        </div>
+
+        <!-- Create Announcement Card (Captain & Staff) -->
+        <div id="announcement-form-container" style="display: none;">
+            <div class="create-announcement-card">
+                <div class="card-header">
+                    <i class="fas fa-plus-circle"></i>
+                    <h3>Create New Announcement</h3>
+                </div>
+                <div class="card-body">
+                    <input 
+                        type="text"
+                        id="announcement-title" 
+                        placeholder="Announcement Title (e.g., Community Meeting, Holiday Notice)"
+                        style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; font-weight: 600; margin-bottom: 15px;">
+                    
+                    <textarea 
+                        id="announcement-input" 
+                        placeholder="Write the announcement details here..."
+                        rows="4"></textarea>
+                    
+                    <div id="image-preview" class="image-preview-grid"></div>
+                    
+                    <div class="form-actions">
+                        <button type="button" id="custom-file-button" class="btn-secondary">
+                            <i class="fas fa-images"></i> Add Images
+                        </button>
+                        <input type="file" id="announcement-image" accept="image/*" multiple style="display: none;">
+                        
+                        <button id="post-announcement" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i> Post Announcement
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Announcements List -->
+        <div class="announcements-section">
+            <div class="section-header">
+                <h3><i class="fas fa-list"></i> All Announcements</h3>
+                <button class="btn-refresh" onclick="location.reload()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+            
+            <ul id="announcement-list" class="announcements-grid"></ul>
+            
+            <button id="load-more" class="btn-load-more" style="display: none;">
+                <i class="fas fa-chevron-down"></i> Load More
+            </button>
+        </div>
+    </main>
+</div>
+
+<!-- Edit Modal -->
+<div id="edit-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-edit"></i> Edit Announcement</h3>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input 
+                type="text"
+                id="edit-title" 
+                placeholder="Announcement Title"
+                style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; font-weight: 600; margin-bottom: 15px;">
+            
+            <textarea id="edit-text" placeholder="Edit your announcement..." rows="5"></textarea>
+            
+            <div id="edit-image-preview" class="image-preview-grid"></div>
+            
+            <label for="edit-image-input" class="btn-add-photos">
+                <i class="fas fa-images"></i> Add More Photos
+            </label>
+            <input type="file" id="edit-image-input" accept="image/*" multiple style="display: none;">
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary close-modal">Cancel</button>
+            <button id="save-edit" class="btn-primary">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Image Viewer Modal -->
+<div id="image-modal" class="image-modal">
+    <button id="close-btn" class="modal-close-btn">
+        <i class="fas fa-times"></i>
+    </button>
+    <button id="prev-btn" class="modal-nav-btn prev">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <img id="modal-image" alt="Announcement Image">
+    <button id="next-btn" class="modal-nav-btn next">
+        <i class="fas fa-chevron-right"></i>
+    </button>
+    <div class="image-counter" id="image-counter"></div>
+</div>
+
+<script type="module" src="../js/captain-announcements.js"></script>
+
+</body>
+</html>

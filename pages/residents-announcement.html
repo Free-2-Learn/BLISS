@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Announcements</title>
+    <link rel="stylesheet" href="../css/resident-announcements.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-bullhorn"></i>
+                <h1>Announcements</h1>
+            </div>
+            <div class="user-info">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-details">
+                    <p class="user-name" id="user-welcome">Resident</p>
+                    <p class="user-role">Community Member</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" id="back-button" class="nav-item">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="stats-summary">
+                <div class="stat-mini">
+                    <i class="fas fa-bullhorn"></i>
+                    <div>
+                        <span class="stat-mini-value" id="total-announcements">0</span>
+                        <span class="stat-mini-label">Total</span>
+                    </div>
+                </div>
+                <div class="stat-mini">
+                    <i class="fas fa-calendar-day"></i>
+                    <div>
+                        <span class="stat-mini-value" id="today-announcements">0</span>
+                        <span class="stat-mini-label">Today</span>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="#" id="logout-button" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <div class="content-header">
+            <div>
+                <h2><i class="fas fa-bullhorn"></i> Community Announcements</h2>
+                <p class="welcome-text">Stay updated with the latest barangay news and events</p>
+            </div>
+            <button class="btn-refresh" onclick="location.reload()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+
+        <!-- Announcements Container -->
+        <div id="announcement-list" class="announcements-container">
+            <!-- Loading State -->
+            <div class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading announcements...</p>
+            </div>
+        </div>
+
+        <!-- Load More Button -->
+        <button id="load-more" class="load-more-btn" style="display: none;">
+            <i class="fas fa-chevron-down"></i>
+            Load More Announcements
+        </button>
+    </main>
+</div>
+
+<!-- Image Modal -->
+<div id="image-modal" class="image-modal">
+    <button id="close-btn" class="modal-close">
+        <i class="fas fa-times"></i>
+    </button>
+    <button id="prev-btn" class="modal-nav prev">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <img id="modal-image" alt="Announcement Image">
+    <button id="next-btn" class="modal-nav next">
+        <i class="fas fa-chevron-right"></i>
+    </button>
+    <div class="image-counter" id="image-counter"></div>
+</div>
+
+<!-- Floating Chat Button -->
+<button id="chat-button" class="chat-button">
+    <svg viewBox="0 0 24 24">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+    </svg>
+    <span id="notification-badge" class="notification-badge">1</span>
+</button>
+
+<!-- Chat Window -->
+<div id="chat-window" class="chat-window">
+    <div class="chat-header">
+        <div class="chat-header-info">
+            <h3>🏛️ Barangay Assistant</h3>
+            <p>Here to help you 24/7</p>
+            <div class="chat-status">
+                <span class="status-dot"></span>
+                <span>Online</span>
+            </div>
+        </div>
+        <button id="minimize-chat" class="minimize-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                <path d="M19 13H5v-2h14v2z"/>
+            </svg>
+        </button>
+    </div>
+
+    <div id="chat-body" class="chat-body">
+        <div id="typing-indicator" class="typing-indicator message bot">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-footer">
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                id="chat-input" 
+                class="chat-input" 
+                placeholder="Type your message..."
+                autocomplete="off"
+            >
+            <button id="send-btn" class="send-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="../js/residents-announcements.js"></script>
+<script type="module" src="../js/chatbot.js"></script>
+
+<script type="module">
+    import { openImageModal, closeImageModal, prevImage, nextImage } from "../js/residents-announcements.js";
+    
+    window.openImageModal = openImageModal;
+    window.closeImageModal = closeImageModal;
+    window.prevImage = prevImage;
+    window.nextImage = nextImage;
+</script>
+
+</body>
+</html>

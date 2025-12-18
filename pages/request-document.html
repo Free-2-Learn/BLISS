@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Document - Barangay Lipay</title>
+    <link rel="stylesheet" href="../css/resident-request.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="../assets/barangay-logo.png" alt="Barangay Logo" class="sidebar-logo">
+            <h2>Barangay Lipay</h2>
+            <p class="sidebar-subtitle">Villasis, Pangasinan</p>
+            <button class="close-sidebar" id="close-sidebar">✕</button>
+        </div>
+        
+        <!-- NAVIGATION - Customize based on user role -->
+        <nav class="sidebar-nav">
+            <!-- FOR RESIDENTS -->
+            <a href="dashboard-resident.html" class="nav-item">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a href="request-document.html" class="nav-item">
+                <span class="nav-icon">📋</span>
+                <span class="nav-text">My Requests</span>
+            </a>
+            <a href="residents-announcement.html" class="nav-item">
+                <span class="nav-icon">📢</span>
+                <span class="nav-text">Announcements</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <span class="nav-icon">👤</span>
+                <span class="nav-text">My Profile</span>
+            </a>
+
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="user-info-card">
+                <div class="user-avatar-small">👤</div>
+                <div class="user-details">
+                    <p class="user-name" id="sidebar-user-name">Loading...</p>
+                    <p class="user-role" id="sidebar-user-role">Resident</p>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()">
+                <span class="nav-icon">🚪</span>
+                <span class="nav-text">Logout</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <button class="menu-toggle" id="menu-toggle">☰</button>
+            <div class="page-title">
+                <h1>📋 My Document Requests</h1>
+                <p id="resident-name">Loading...</p>
+            </div>
+            <button id="open-modal-btn" class="primary-btn">
+                <span class="btn-icon">📄</span>
+                <span>New Request</span>
+            </button>
+        </div>
+
+        <!-- Statistics Dashboard -->
+        <div class="dashboard-stats">
+            <div class="stat-card pending">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-info">
+                    <h3 id="pending-count">0</h3>
+                    <p>Pending</p>
+                </div>
+            </div>
+            
+            <div class="stat-card approved">
+                <div class="stat-icon">✓</div>
+                <div class="stat-info">
+                    <h3 id="approved-count">0</h3>
+                    <p>Approved</p>
+                </div>
+            </div>
+            
+            <div class="stat-card rejected">
+                <div class="stat-icon">✗</div>
+                <div class="stat-info">
+                    <h3 id="rejected-count">0</h3>
+                    <p>Rejected</p>
+                </div>
+            </div>
+            
+            <div class="stat-card total">
+                <div class="stat-icon">📄</div>
+                <div class="stat-info">
+                    <h3 id="total-count">0</h3>
+                    <p>Total Requests</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-container">
+            <div class="filter-group">
+                <label for="search-input">
+                    <span class="filter-icon">🔍</span>
+                    Search
+                </label>
+                <input type="text" id="search-input" placeholder="Search by document type or purpose..." />
+            </div>
+            
+            <div class="filter-group">
+                <label for="status-filter">
+                    <span class="filter-icon">📊</span>
+                    Status
+                </label>
+                <select id="status-filter">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+            
+            <button class="filter-reset-btn" onclick="resetFilters()">
+                🔄 Reset
+            </button>
+        </div>
+
+        <!-- Pending Requests Section -->
+        <div class="section-header">
+            <div class="section-title">
+                <span class="section-icon">⏳</span>
+                <h3>Pending Requests</h3>
+            </div>
+        </div>
+        <div id="pending-requests-container" class="cards-container">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading your requests...</p>
+            </div>
+        </div>
+
+        <!-- Completed Requests Section -->
+        <div class="section-header">
+            <div class="section-title">
+                <span class="section-icon">✓</span>
+                <h3>Completed Requests</h3>
+            </div>
+        </div>
+        <div id="completed-requests-container" class="cards-container">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading your requests...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Request Modal -->
+    <dialog id="request-modal" class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📄 Request Document</h2>
+                <button type="button" id="close-modal-btn" class="close-btn">✕</button>
+            </div>
+            
+            <form id="request-form">
+                <div class="form-group">
+                    <label for="document-type">Document Type <span class="required">*</span></label>
+                    <select id="document-type" required>
+                        <option value="">-- Select a document type --</option>
+                        <option value="Barangay Clearance">Barangay Clearance</option>
+                        <option value="Certificate of Residency">Certificate of Residency</option>
+                        <option value="Certificate of Indigency">Certificate of Indigency</option>
+                        <option value="Barangay ID">Barangay ID</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="request-note">Purpose/Reason <span class="required">*</span></label>
+                    <textarea id="request-note" placeholder="Please specify the purpose for requesting this document..." required rows="4"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="submit-btn">
+                        <span>📤</span>
+                        Submit Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- Edit Modal -->
+    <dialog id="edit-request-modal" class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ Edit Request</h2>
+                <button type="button" id="close-edit-modal-btn" class="close-btn">✕</button>
+            </div>
+            
+            <form id="edit-request-form">
+                <input type="hidden" id="edit-request-id">
+                
+                <div class="form-group">
+                    <label for="edit-document-type">Document Type <span class="required">*</span></label>
+                    <select id="edit-document-type" required>
+                        <option value="Barangay Clearance">Barangay Clearance</option>
+                        <option value="Certificate of Residency">Certificate of Residency</option>
+                        <option value="Certificate of Indigency">Certificate of Indigency</option>
+                        <option value="Barangay ID">Barangay ID</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-request-note">Purpose/Reason <span class="required">*</span></label>
+                    <textarea id="edit-request-note" required rows="4"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="submit-btn">
+                        <span>💾</span>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- Floating Chat Button -->
+    <button id="chat-button" class="chat-button">
+        <svg viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+        </svg>
+        <span id="notification-badge" class="notification-badge">1</span>
+    </button>
+
+    <!-- Chat Window -->
+    <div id="chat-window" class="chat-window">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <h3>🏛️ Barangay Assistant</h3>
+                <p>Here to help you 24/7</p>
+                <div class="chat-status">
+                    <span class="status-dot"></span>
+                    <span>Online</span>
+                </div>
+            </div>
+            <button id="minimize-chat" class="minimize-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path d="M19 13H5v-2h14v2z"/>
+                </svg>
+            </button>
+        </div>
+
+        <div id="chat-body" class="chat-body">
+            <div id="typing-indicator" class="typing-indicator message bot">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <div class="typing-dots">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-footer">
+            <div class="chat-input-container">
+                <input 
+                    type="text" 
+                    id="chat-input" 
+                    class="chat-input" 
+                    placeholder="Type your message..."
+                    autocomplete="off"
+                >
+                <button id="send-btn" class="send-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/request-document.js"></script>
+    <script type="module" src="../js/chatbot.js"></script>
+    <script type="module">
+        // Sidebar toggle
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.add('active');
+        });
+        
+        document.getElementById('close-sidebar').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.remove('active');
+        });
+        
+        // Logout handler
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Add your logout logic here
+                window.location.href = '../index.html';
+            }
+        }
+        window.handleLogout = handleLogout;
+    </script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+/* post ann */
+
+#announcement-form-container {
+  background: white;
+  width: 400px; /* Same as edit modal */
+  margin: 20px auto; /* Center it */
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Header styling (same as edit modal) */
+#announcement-form-container h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Custom file button styling */
+#custom-file-button {
+  background: #1877f2;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+}
+
+/* Image preview styling */
+#image-preview {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+#image-preview img {
+  width: 80px;
+  height: 80px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+/* Post button */
+#post-announcement {
+  width: 100%;
+  background: #1877f2;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* Announcement Input Styling */
+#announcement-input {
+  width: calc(100% - 20px); /* Full width with padding */
+  max-height: 150px; /* Limits expansion */
+  min-height: 50px; /* Default height */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 18px;
+  padding: 10px;
+  outline: none;
+  resize: none; /* Prevents manual resizing */
+  display: block;
+  margin: 10px auto;
+  overflow-y: auto; /* Enables scrollbar when content exceeds height */
+  white-space: pre-wrap; /* Retains spaces and line breaks */
+}
+
+/* Focus effect */
+#announcement-input:focus {
+  border-color: #1877f2;
+  box-shadow: 0 0 5px rgba(24, 119, 242, 0.5);
+}
+
+/* post */
+
+/* Image Preview Styling */
+.image-preview {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.image-container {
+  position: relative;
+  display: inline-block;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.preview-image {
+  max-width: 100px;
+  margin: 5px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.remove-btn:hover {
+  opacity: 1;
+}

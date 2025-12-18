@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Requests</title>
+  <link rel="stylesheet" href="../css/doc-request.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  
+  <script type="module" src="../js/document-requests.js"></script>
+</head>
+
+<body>
+
+<div style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-bottom: 0; position: relative;">
+  <h1 style="margin: 0; font-size: 28px;">📋 Document Request Management</h1>
+  <p style="margin: 5px 0 0 0; opacity: 0.9;">Manage and process resident document requests</p>
+  <!-- User info will be inserted here by JavaScript -->
+</div>
+
+  <!-- NEW: Statistics Dashboard -->
+  <div class="dashboard-stats">
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #FFA726;">⏳</div>
+      <div class="stat-info">
+        <h3 id="pending-count">0</h3>
+        <p>Pending Requests</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #4CAF50;">✓</div>
+      <div class="stat-info">
+        <h3 id="approved-count">0</h3>
+        <p>Approved Today</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #EF5350;">✗</div>
+      <div class="stat-info">
+        <h3 id="rejected-count">0</h3>
+        <p>Rejected Today</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #42A5F5;">📄</div>
+      <div class="stat-info">
+        <h3 id="generated-count">0</h3>
+        <p>Documents Generated</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background: #AB47BC;">📊</div>
+      <div class="stat-info">
+        <h3 id="total-count">0</h3>
+        <p>Total Requests</p>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- NEW: Filter and Search Controls -->
+  <div class="filter-container">
+    <div class="filter-group">
+      <label for="search-input">🔍 Search Resident:</label>
+      <input type="text" id="search-input" placeholder="Search by name..." />
+    </div>
+    
+    <div class="filter-group">
+      <label for="document-filter">📄 Document Type:</label>
+      <select id="document-filter">
+        <option value="all">All Documents</option>
+        <option value="Barangay Clearance">Barangay Clearance</option>
+        <option value="Certificate of Residency">Certificate of Residency</option>
+        <option value="Certificate of Indigency">Certificate of Indigency</option>
+        <option value="Barangay ID">Barangay ID</option>
+        <option value="Business Permit">Business Permit</option>
+      </select>
+    </div>
+    
+    <div class="filter-group">
+      <label for="status-filter">📊 Status:</label>
+      <select id="status-filter">
+        <option value="all">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    
+    <div class="filter-group">
+      <label for="date-filter">📅 Date Range:</label>
+      <select id="date-filter">
+        <option value="all">All Time</option>
+        <option value="today">Today</option>
+        <option value="week">This Week</option>
+        <option value="month">This Month</option>
+      </select>
+    </div>
+    
+    <button class="request-btn" onclick="resetFilters()" style="align-self: flex-end;">
+      🔄 Reset Filters
+    </button>
+  </div>
+
+<!-- Pending Requests -->
+<div class="requests-container">
+  <h2>Pending Requests</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Resident Name</th>
+          <th>Document Type</th>
+          <th>Reason</th>
+          <th>Status</th>
+          <th>
+            Date Requested
+            <button type="button" id="sortToggleBtn" onclick="toggleSortPending()" title="Sort by Date">🔽</button>
+          </th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="pending-requests"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Processed Requests -->
+<div class="requests-container">
+  <h2>Processed Requests</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Resident Name</th>
+          <th>Document Type</th>
+          <th>Reason</th>
+          <th>Status</th>
+          <th>
+            Date Requested
+            <button type="button" id="sortToggleBtn1" onclick="toggleSortProcessed()" title="Sort by Date">🔽</button>
+          </th>
+          <th>Approved/Rejected Date</th>
+          <th>Captain's Comment</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="processed-requests"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Bulk Actions Bar (hidden by default) -->
+<div id="bulk-actions-bar" style="display: none; background: #667eea; color: white; padding: 15px 20px; margin: 20px; border-radius: 12px; align-items: center; gap: 15px;">
+  <span><strong id="selected-count">0</strong> selected</span>
+  <button onclick="bulkApprove()" class="request-btn" style="background: #4CAF50;">✓ Approve All</button>
+  <button onclick="bulkReject()" class="request-btn" style="background: #ef5350;">✗ Reject All</button>
+  <button onclick="selectedRequests.clear(); loadRequests();" class="request-btn" style="background: #78909c;">Clear Selection</button>
+</div>
+
+<!-- Action Buttons -->
+<div style="margin: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+  <button onclick="exportToCSV()" class="request-btn" style="background: linear-gradient(135deg, #4CAF50, #2E7D32);">
+    📊 Export to CSV
+  </button>
+  <button onclick="generateReport()" class="request-btn" style="background: linear-gradient(135deg, #42a5f5, #1976d2);">
+    🖨️ Print Report
+  </button>
+</div>
+
+<!-- Details Modal -->
+<div id="details-modal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span onclick="closeDetailsModal()" style="float: right; cursor: pointer; font-size: 24px;">&times;</span>
+    <div id="details-body"></div>
+  </div>
+</div>
+
+<a href="#" id="back-button" class="request-btn" style="margin-left: 20px;">Back to Dashboard</a>
+
+    <!-- Reason Modal -->
+    <div id="reason-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <h3 id="modal-title">Reason for Action</h3>
+          <p id="resident-name" style="font-weight: bold; margin-top: 10px;"></p>
+          <p>Provide a reason for <span id="action-type">this action</span> (optional):</p>
+          <textarea id="action-reason" placeholder="Type your reason here..." style="width:100%; height:100px; margin-top:10px;"></textarea>
+          <div style="margin-top: 20px; text-align: right;">
+            <button class="request-btn" onclick="confirmAction()">Confirm</button>
+            <button class="request-btn" style="background:#aaa;" onclick="closeReasonModal()">Cancel</button>
+          </div>
+        </div>
+      </div>
+  </body>
+</html>

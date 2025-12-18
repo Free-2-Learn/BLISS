@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Barangay Lipay</title>
+    <link rel="stylesheet" href="../css/analytics-dashboard.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    
+</head>
+<body>
+    <!-- Header -->
+<div class="page-header">
+    <div class="header-content">
+        <div>
+            <h1>📊 Analytics Dashboard</h1>
+            <p>System monitoring and insights</p>
+            <p id="admin-name" class="admin-info">Loading...</p>
+            <p style="font-size: 12px; opacity: 0.8; margin-top: 5px;">
+                🔒 Captain/Admin Access Only
+            </p>
+        </div>
+        <button id="logout-btn" class="logout-btn">🚪 Logout</button>
+    </div>
+</div>
+
+    <div class="container">
+        <!-- Quick Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card" style="--card-color: #667eea;">
+                <div class="stat-header">
+                    <span class="stat-icon">👥</span>
+                    <h3>Total Residents</h3>
+                </div>
+                <div class="stat-value" id="total-residents">0</div>
+                <div class="stat-subtitle">Registered residents</div>
+            </div>
+
+            <div class="stat-card" style="--card-color: #FFA726;">
+                <div class="stat-header">
+                    <span class="stat-icon">📄</span>
+                    <h3>Document Requests</h3>
+                </div>
+                <div class="stat-value" id="total-documents">0</div>
+                <div class="stat-subtitle">
+                    <span class="stat-breakdown">
+                        <span class="badge badge-pending" id="pending-docs">0 Pending</span>
+                        <span class="badge badge-approved" id="approved-docs">0 Approved</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="stat-card" style="--card-color: #EF5350;">
+                <div class="stat-header">
+                    <span class="stat-icon">🚨</span>
+                    <h3>Incident Reports</h3>
+                </div>
+                <div class="stat-value" id="total-incidents">0</div>
+                <div class="stat-subtitle">Total incidents reported</div>
+            </div>
+
+            <div class="stat-card" style="--card-color: #4CAF50;">
+                <div class="stat-header">
+                    <span class="stat-icon">👮</span>
+                    <h3>Staff Accounts</h3>
+                </div>
+                <div class="stat-value" id="total-staff">0</div>
+                <div class="stat-subtitle">Active staff members</div>
+            </div>
+        </div>
+
+        <!-- User Management Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2>👥 User Management</h2>
+                <button id="create-staff-btn" class="btn btn-primary">+ Create Staff Account</button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Staff Accounts</h3>
+                    <input type="text" id="staff-search" placeholder="🔍 Search staff..." class="search-input">
+                </div>
+                <div id="staff-list" class="staff-list">
+                    <!-- Staff list will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📈 Analytics & Insights</h2>
+            </div>
+
+            <div class="charts-grid">
+                <!-- Most Requested Documents -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>📄 Most Requested Documents</h3>
+                        <span class="chart-subtitle">Top 5 document types</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="documentsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Request Trends by Month -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>📅 Request Trends</h3>
+                        <span class="chart-subtitle">Last 6 months</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trendsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Incident Frequency -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>🚨 Incident Frequency</h3>
+                        <span class="chart-subtitle">Monthly incidents</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="incidentsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Request Status Breakdown -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>📊 Request Status</h3>
+                        <span class="chart-subtitle">Current distribution</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a href="dashboard-captain.html" class="back-link">← Back to Dashboard</a>
+    </div>
+
+    <!-- Create Staff Modal -->
+    <dialog id="create-staff-modal">
+        <div class="modal-header">
+            <h2>Create Staff Account</h2>
+            <button type="button" id="close-staff-modal-x" class="modal-close-btn">✕</button>
+        </div>
+        <form id="create-staff-form" class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="staff-first-name">First Name *</label>
+                    <input type="text" id="staff-first-name" required placeholder="Bryan" pattern="[A-Za-z\s\.\-']+" title="Only letters, spaces, hyphens, periods, and apostrophes">
+                </div>
+
+                <div class="form-group">
+                    <label for="staff-last-name">Last Name *</label>
+                    <input type="text" id="staff-last-name" required placeholder="Doctolero" pattern="[A-Za-z\s\.\-']+" title="Only letters, spaces, hyphens, periods, and apostrophes">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="staff-email-preview">Email Address (Auto-generated)</label>
+                <input type="text" id="staff-email-preview" readonly placeholder="Email will appear here..." style="background: #f7fafc; color: #718096;">
+                <p style="font-size: 11px; color: #718096; margin-top: 5px;">
+                    ✨ Email is automatically generated as: firstname.lastname@BMS.com
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label for="staff-password">Temporary Password *</label>
+                <div style="position: relative;">
+                    <input type="password" id="staff-password" required placeholder="Minimum 6 characters" minlength="6" style="padding-right: 45px;">
+                    <button type="button" id="toggle-password" class="password-toggle-btn">
+                        <span id="password-icon">👁️</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="staff-birthdate">Date of Birth *</label>
+                    <div class="birthdate-grid">
+                        <select id="birth-month" required>
+                            <option value="">Month</option>
+                            <option value="01">January</option>
+                            <option value="02">February</option>
+                            <option value="03">March</option>
+                            <option value="04">April</option>
+                            <option value="05">May</option>
+                            <option value="06">June</option>
+                            <option value="07">July</option>
+                            <option value="08">August</option>
+                            <option value="09">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                        <select id="birth-day" required>
+                            <option value="">Day</option>
+                        </select>
+                        <select id="birth-year" required>
+                            <option value="">Year</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="staff-birthdate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="staff-age-display">Age (Auto-calculated)</label>
+                    <input type="text" id="staff-age-display" readonly placeholder="Age will appear here" style="background: #f7fafc; color: #718096;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="staff-gender">Gender *</label>
+                <select id="staff-gender" required>
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="staff-contact">Contact Number (PH) *</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span style="padding: 12px 16px; background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 10px; font-weight: 600; color: #718096;">+63</span>
+                    <input type="tel" id="staff-contact" required placeholder="9123456789" pattern="[0-9]{10}" maxlength="10" title="Enter 10 digits (e.g., 9123456789)" style="flex: 1;">
+                </div>
+                <p style="font-size: 11px; color: #718096; margin-top: 5px;">
+                    📱 Enter 10 digits without country code (e.g., 9123456789)
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label for="staff-address">Address *</label>
+                <div style="position: relative;">
+                    <textarea id="staff-address" required placeholder="Enter address or click 'Use Current Location'" rows="2"></textarea>
+                    <button type="button" id="get-location-btn" class="location-btn">
+                        📍 Use Current Location
+                    </button>
+                </div>
+                <p style="font-size: 11px; color: #718096; margin-top: 5px;" id="location-status">
+                    💡 You can type manually or use your current location
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label for="staff-role">Role *</label>
+                <select id="staff-role" required>
+                    <option value="">Select role</option>
+                    <option value="staff">Staff</option>
+                </select>
+                <p style="font-size: 11px; color: #718096; margin-top: 5px;">
+                    🔒 Only Staff accounts can be created. Captain/Admin is managed in config/admin.
+                </p>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">Create Account</button>
+                <button type="button" id="close-staff-modal" class="btn btn-secondary">Cancel</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script type="module" src="../js/analytics-dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard</title>
+    <link rel="stylesheet" href="../css/staff-dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="dashboard-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-user-tie"></i>
+                <h1>Staff Portal</h1>
+            </div>
+            <div class="user-info">
+                <div class="avatar">👨‍💼</div>
+                <div class="user-details">
+                    <p class="user-name" id="staff-welcome">Staff Member</p>
+                    <p class="user-role">Staff</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="residents.html" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Manage Residents</span>
+            </a>
+            <a href="document-requests.html" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Document Requests</span>
+            </a>
+            <a href="captain-announcements.html" class="nav-item">
+                <i class="fas fa-bullhorn"></i>
+                <span>Announcements</span>
+            </a>
+            <a href="resident-history.html" class="nav-item">
+                <i class="fas fa-archive"></i>
+                <span>Archived Residents</span>
+            </a>
+            <a href="staff-incident-dashboard.html" class="nav-item">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Incident Reports</span>
+            </a>
+            <a href="staff-chat.html" class="nav-item">
+                <i class="fas fa-comments"></i>
+                <span>Chats</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="staff-notice">
+                <i class="fas fa-info-circle"></i>
+                <p>Staff Account - Limited Access</p>
+            </div>
+            <a href="#" id="logout-button" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-header">
+            <h2>Dashboard Overview</h2>
+            <p class="welcome-text">Welcome back! Here's what needs your attention.</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Total Residents</h3>
+                    <p class="stat-value" id="total-residents">
+                        <span class="loading-spinner">⏳</span>
+                    </p>
+                    <span class="stat-change" id="residents-change">Loading...</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Pending Documents</h3>
+                    <p class="stat-value" id="pending-documents">
+                        <span class="loading-spinner">⏳</span>
+                    </p>
+                    <span class="stat-change" id="documents-change">Requires attention</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Unassigned Incidents</h3>
+                    <p class="stat-value" id="my-incidents">
+                        <span class="loading-spinner">⏳</span>
+                    </p>
+                    <span class="stat-change" id="incidents-change">Loading...</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Waiting Chats</h3>
+                    <p class="stat-value" id="waiting-chats">
+                        <span class="loading-spinner">⏳</span>
+                    </p>
+                    <span class="stat-change" id="chats-change">From residents</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="actions-grid">
+                <a href="residents.html" class="action-card">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Add New Resident</span>
+                </a>
+                <a href="document-requests.html" class="action-card">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Process Documents</span>
+                </a>
+                <a href="staff-incident-dashboard.html" class="action-card">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Handle Incidents</span>
+                </a>
+                <a href="staff-chat.html" class="action-card">
+                    <i class="fas fa-reply"></i>
+                    <span>Reply to Chats</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <h3>My Recent Activity</h3>
+            <div class="activity-list" id="activity-list">
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: #667eea;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <div class="activity-details">
+                        <p class="activity-title">Loading your recent activity...</p>
+                        <p class="activity-desc">Please wait</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script type="module" src="../js/staff-dashboard.js"></script>
+
+</body>
+</html>

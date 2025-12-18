@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Incident Report</title>
+    
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-storage.js"></script>
+    <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="../css/incident-report.css">
+
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>🏛️ Barangay</h2>
+            <p>Management System</p>
+        </div>
+
+        <div class="user-profile">
+            <div class="user-avatar" id="userAvatar">
+                <span id="userInitials">U</span>
+            </div>
+            <div class="user-info">
+                <h3 id="userName">Loading...</h3>
+                <p id="userEmail">user@example.com</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="dashboard-resident.html" class="nav-item">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a href="request-document.html" class="nav-item">
+                <span class="nav-icon">📄</span>
+                <span class="nav-text">Request Document</span>
+            </a>
+            <a href="residents-announcement.html" class="nav-item">
+                <span class="nav-icon">📢</span>
+                <span class="nav-text">Announcements</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <span class="nav-icon">👤</span>
+                <span class="nav-text">My Profile</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button onclick="handleLogout()" class="logout-btn">
+                <span class="nav-icon">🚪</span>
+                <span class="nav-text">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <h1>📝 Incident Reports</h1>
+            
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="submit">
+                    ➕ Submit New Report
+                </button>
+                <button class="tab-btn" data-tab="reports">
+                    📋 My Reports
+                    <span class="report-count" id="reportCount">0</span>
+                </button>
+            </div>
+
+            <!-- Tab Content Container -->
+            <div class="tab-content-wrapper">
+                
+                <!-- Submit Report Tab -->
+                <div id="submitTab" class="tab-content active">
+                    <div id="restrictionNotice" class="restriction-notice"></div>
+                    <div id="successMessage" class="success-message"></div>
+                    <div id="errorMessage" class="error-message"></div>
+
+                    <form id="incidentForm">
+                        <div class="form-group">
+                            <label for="incidentType">Incident Type*</label>
+                            <select id="incidentType" required>
+                                <option value="">Select Type</option>
+                                <option value="noise">Noise Complaint</option>
+                                <option value="dispute">Neighborhood Dispute</option>
+                                <option value="vandalism">Vandalism</option>
+                                <option value="theft">Theft</option>
+                                <option value="public_safety">Public Safety</option>
+                                <option value="infrastructure">Infrastructure Issue</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description*</label>
+                            <textarea id="description" placeholder="Provide detailed description of the incident..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Location*</label>
+                            <div class="location-input-wrapper">
+                                <input type="text" id="location" placeholder="e.g., Corner of Main St. and Oak Ave." required>
+                                <button type="button" id="getLocationBtn" class="location-btn" title="Get my current location">
+                                    📍 Get My Location
+                                </button>
+                            </div>
+                            <div id="locationStatus" class="location-status"></div>
+                            <small style="color:#999; font-size:12px; margin-top:5px; display:block;">
+                                💡 Click "Get My Location" to auto-fill your current location, or type it manually if the incident happened elsewhere.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="incidentDate">Incident Date*</label>
+                            <input type="date" id="incidentDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Upload Images (Optional - Max 5 images)</label>
+                            <div class="image-upload" id="imageUpload">
+                                <p>📷 Click or drag images here</p>
+                                <input type="file" id="imageInput" accept="image/*" multiple style="display:none;">
+                            </div>
+                            <div id="imagePreview" class="image-preview"></div>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            Submit Report
+                        </button>
+                    </form>
+                </div>
+
+                <!-- My Reports Tab -->
+                <div id="reportsTab" class="tab-content">
+                    <!-- Status Filter Chips -->
+                    <div class="status-filters">
+                        <button class="filter-chip active" data-status="all">
+                            All Reports
+                            <span class="chip-count" id="countAll">0</span>
+                        </button>
+                        <button class="filter-chip" data-status="submitted">
+                            📨 New
+                            <span class="chip-count" id="countSubmitted">0</span>
+                        </button>
+                        <button class="filter-chip" data-status="acknowledged">
+                            👀 Acknowledged
+                            <span class="chip-count" id="countAcknowledged">0</span>
+                        </button>
+                        <button class="filter-chip" data-status="in-progress">
+                            🔄 In Progress
+                            <span class="chip-count" id="countInProgress">0</span>
+                        </button>
+                        <button class="filter-chip" data-status="resolved">
+                            ✅ Resolved
+                            <span class="chip-count" id="countResolved">0</span>
+                        </button>
+                        <button class="filter-chip" data-status="closed">
+                            🔒 Closed
+                            <span class="chip-count" id="countClosed">0</span>
+                        </button>
+                        <button class="filter-chip" data-status="rejected">
+                            ❌ Rejected
+                            <span class="chip-count" id="countRejected">0</span>
+                        </button>
+                        <button class="filter-chip" data-status="false-report">
+                            ⚠️ False
+                            <span class="chip-count" id="countFalse">0</span>
+                        </button>
+                    </div>
+
+                    <!-- Search and Date Range Filters -->
+                    <div class="search-filter-section">
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+                            
+                            <!-- Search Input Row -->
+                            <div style="width: 100%;">
+                                <label for="searchReports" style="display: block; font-size: 13px; color: #555; font-weight: 600; margin-bottom: 8px;">
+                                    🔍 Search Reports
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="searchReports" 
+                                    placeholder="Search by Report ID, location, or description..." 
+                                    style="width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: border-color 0.3s;"
+                                    onfocus="this.style.borderColor='#3498db'"
+                                    onblur="this.style.borderColor='#e0e0e0'"
+                                >
+                            </div>
+                            
+                            <!-- Date Range and Buttons Row -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-items: end;">
+                                
+                                <!-- Date From -->
+                                <div>
+                                    <label for="dateFrom" style="display: block; font-size: 13px; color: #555; font-weight: 600; margin-bottom: 8px;">
+                                        📅 From Date
+                                    </label>
+                                    <input 
+                                        type="date" 
+                                        id="dateFrom" 
+                                        style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: border-color 0.3s;"
+                                        onfocus="this.style.borderColor='#3498db'"
+                                        onblur="this.style.borderColor='#e0e0e0'"
+                                    >
+                                </div>
+                                
+                                <!-- Date To -->
+                                <div>
+                                    <label for="dateTo" style="display: block; font-size: 13px; color: #555; font-weight: 600; margin-bottom: 8px;">
+                                        📅 To Date
+                                    </label>
+                                    <input 
+                                        type="date" 
+                                        id="dateTo" 
+                                        style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: border-color 0.3s;"
+                                        onfocus="this.style.borderColor='#3498db'"
+                                        onblur="this.style.borderColor='#e0e0e0'"
+                                    >
+                                </div>
+                                
+                                <!-- Buttons -->
+                                <div style="display: flex; gap: 8px;">
+                                    <button 
+                                        onclick="applySearchFilters()" 
+                                        class="search-filter-btn search-btn"
+                                    >
+                                        🔍 Search
+                                    </button>
+                                    
+                                    <button 
+                                        onclick="clearSearchFilters()" 
+                                        class="search-filter-btn clear-btn"
+                                    >
+                                        ✖️ Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Results Info -->
+                        <div id="searchResultsInfo" class="search-results-info">
+                            <span id="searchResultsText"></span>
+                        </div>
+                    </div>
+
+                    <!-- Reports List -->
+                    <div id="reportsList" class="reports-container"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Report Details Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeReportModal()">&times;</span>
+            <h2>Report Details</h2>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Image Lightbox -->
+    <div id="imageLightbox" class="lightbox">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <button class="lightbox-prev" onclick="changeLightboxImage(-1)">&#10094;</button>
+        <img id="lightboxImage" class="lightbox-image" src="" alt="Full size image">
+        <button class="lightbox-next" onclick="changeLightboxImage(1)">&#10095;</button>
+        <div id="lightboxCounter" class="lightbox-counter"></div>
+    </div>
+
+    <!-- Custom Modal System -->
+    <div id="customModalOverlay" class="custom-modal-overlay">
+        <div id="customModalDialog" class="custom-modal-dialog">
+            <div class="custom-modal-header">
+                <span id="customModalIcon" class="custom-modal-icon"></span>
+                <h3 id="customModalTitle" class="custom-modal-title"></h3>
+            </div>
+            <div id="customModalBody" class="custom-modal-body"></div>
+            <div id="customModalFooter" class="custom-modal-footer"></div>
+        </div>
+    </div>
+
+    <!-- Floating Chat Button -->
+    <button id="chat-button" class="chat-button">
+        <svg viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+        </svg>
+        <span id="notification-badge" class="notification-badge">1</span>
+    </button>
+
+    <!-- Chat Window -->
+    <div id="chat-window" class="chat-window">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <h3>🏛️ Barangay Assistant</h3>
+                <p>Here to help you 24/7</p>
+                <div class="chat-status">
+                    <span class="status-dot"></span>
+                    <span>Online</span>
+                </div>
+            </div>
+            <button id="minimize-chat" class="minimize-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path d="M19 13H5v-2h14v2z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Chat Body -->
+        <div id="chat-body" class="chat-body">
+            <!-- Messages will appear here -->
+            
+            <!-- Typing Indicator -->
+            <div id="typing-indicator" class="typing-indicator message bot">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <div class="typing-dots">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Footer -->
+        <div class="chat-footer">
+            <div class="chat-input-container">
+                <input 
+                    type="text" 
+                    id="chat-input" 
+                    class="chat-input" 
+                    placeholder="Type your message..."
+                    autocomplete="off"
+                >
+                <button id="send-btn" class="send-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../firebase-config.js"></script>
+    <script type="module" src="../js/resident-incident.js"></script>
+
+    <script type="module" src="../js/chatbot.js"></script>
+</body>
+</html>

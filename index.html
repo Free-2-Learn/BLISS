@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BARANGAY LIPAY INFORMATION AND SERVICES SYSTEM - Login</title>
+    
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Background Animation -->
+<div class="background-animation">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+    <div class="shape shape-4"></div>
+    <div class="shape shape-5"></div>
+</div>
+
+<div class="login-wrapper">
+    <!-- Left Side - Branding -->
+    <div class="login-left">
+        <div class="branding">
+            <div class="logo-container">
+                <div class="logo-circle">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="logo-glow"></div>
+            </div>
+            
+            <h1>Barangay Lipay<br>Information and Services System</h1>
+            <p class="tagline">Efficient • Connected</p>
+            
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Secure Access</h3>
+                        <p>Protected with enterprise-level security</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Real-time Updates</h3>
+                        <p>Stay informed with instant notifications</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>24/7 Support</h3>
+                        <p>We're here to help anytime you need</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="branding-footer">
+                <p>© 2025 BARANGAY LIPAY INFORMATION AND SERVICES SYSTEM</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side - Login Form -->
+    <div class="login-right">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="welcome-icon">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h2>Welcome Back!</h2>
+                <p>Please login to your account</p>
+            </div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-envelope"></i>
+                        Email Address
+                    </label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="email" 
+                            id="username" 
+                            placeholder="Enter your email"
+                            autocomplete="email"
+                            required
+                        >
+                        <span class="input-icon">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i>
+                        Password
+                    </label>
+                    <div class="input-wrapper password-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                        >
+                        <span class="input-icon">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <button type="button" class="toggle-password" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="rememberMe">
+                        <span class="checkmark"></span>
+                        <span class="label-text">Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-password"> </a>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <span class="btn-text">Login</span>
+                    <span class="btn-icon">
+                        <i class="fas fa-arrow-right"></i>
+                    </span>
+                </button>
+
+                <div id="error-message" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span class="error-text"></span>
+                </div>
+            </form>
+
+            <div class="login-footer">
+                <div class="divider">
+                    <span><!-- or --></span>
+                </div>
+                <!-- <p>Don't have an account? <a href="pages/register.html">Contact Admin</a></p> -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner">
+        <div class="spinner-circle"></div>
+        <div class="spinner-text">
+            <i class="fas fa-lock"></i>
+            <p>Authenticating...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js"></script>
+
+<!-- Load Scripts -->
+<script type="module" src="firebase-config.js"></script>
+<script type="module" src="js/login.js"></script>
+
+</body>
+</html>

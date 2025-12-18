@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resident Dashboard</title>
+    <link rel="stylesheet" href="../css/resident-dashboard.css">
+    <link rel="stylesheet" href="../css/chatbot.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-home"></i>
+                <h1>Resident Portal</h1>
+            </div>
+            <div class="user-info">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-details">
+                    <p class="user-name" id="welcome-text">Loading...</p>
+                    <p class="user-role">Resident</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="residents-announcement.html" class="nav-item">
+                <i class="fas fa-bullhorn"></i>
+                <span>Announcements</span>
+            </a>
+            <a href="request-document.html" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Request Document</span>
+            </a>
+            <a href="resident-incident-report.html" class="nav-item">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Report Incident</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <i class="fas fa-user-circle"></i>
+                <span>My Profile</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#" id="logout-button" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <div class="content-header">
+            <div>
+                <h2>Welcome Back!</h2>
+                <p class="welcome-text">Here's what's happening in your barangay today</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-icon" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-grid">
+            <!-- Latest Announcement Card -->
+            <div class="stat-card clickable" id="latest-announcement-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-bullhorn"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Latest Announcement</h3>
+                    <p class="stat-title" id="latest-announcement-title">Loading...</p>
+                    <p class="stat-label" id="latest-announcement-date">Checking for updates...</p>
+                </div>
+            </div>
+
+            <!-- Latest Request Card -->
+            <div class="stat-card clickable" id="latest-request-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>My Latest Request</h3>
+                    <p class="stat-title" id="latest-request-title">No requests yet</p>
+                    <p class="stat-label" id="latest-request-status">Click to create a request</p>
+                </div>
+            </div>
+
+            <!-- Latest Incident Card -->
+            <div class="stat-card clickable" id="latest-incident-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>My Latest Incident</h3>
+                    <p class="stat-title" id="latest-incident-title">No incidents reported</p>
+                    <p class="stat-label" id="latest-incident-status">Click to report an incident</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions-section">
+            <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+            <div class="actions-grid">
+                <a href="residents-announcement.html" class="action-card">
+                    <div class="action-icon" style="background: #667eea;">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <h4>View Announcements</h4>
+                    <p>Stay updated with community news</p>
+                </a>
+
+                <a href="request-document.html" class="action-card">
+                    <div class="action-icon" style="background: #f5576c;">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h4>Request Document</h4>
+                    <p>Get barangay clearance & certificates</p>
+                </a>
+
+                <a href="resident-incident-report.html" class="action-card">
+                    <div class="action-icon" style="background: #4facfe;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h4>Report Incident</h4>
+                    <p>Report issues in your area</p>
+                </a>
+
+                <a href="profile.html" class="action-card">
+                    <div class="action-icon" style="background: #43e97b;">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <h4>My Profile</h4>
+                    <p>View and update your information</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity-section">
+            <h3><i class="fas fa-history"></i> Recent Activity</h3>
+            <div class="activity-list" id="activity-list">
+                <!-- Activities will be loaded here -->
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Announcement Detail Modal -->
+<div id="announcement-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-bullhorn"></i> Announcement Details</h3>
+            <button class="close-modal" onclick="closeAnnouncementModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="announcement-detail-content">
+                <!-- Announcement details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Detail Modal -->
+<div id="request-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-file-alt"></i> Request Progress</h3>
+            <button class="close-modal" onclick="closeRequestModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="request-detail-content">
+                <!-- Request details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Incident Detail Modal -->
+<div id="incident-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-exclamation-circle"></i> Incident Report Details</h3>
+            <button class="close-modal" onclick="closeIncidentModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="incident-detail-content">
+                <!-- Incident details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Chat Button -->
+<button id="chat-button" class="chat-button">
+    <svg viewBox="0 0 24 24">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+    </svg>
+    <span id="notification-badge" class="notification-badge">1</span>
+</button>
+
+<!-- Chat Window -->
+<div id="chat-window" class="chat-window">
+    <!-- Chat Header -->
+    <div class="chat-header">
+        <div class="chat-header-info">
+            <h3>🏛️ Barangay Assistant</h3>
+            <p>Here to help you 24/7</p>
+            <div class="chat-status">
+                <span class="status-dot"></span>
+                <span>Online</span>
+            </div>
+        </div>
+        <button id="minimize-chat" class="minimize-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                <path d="M19 13H5v-2h14v2z"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Chat Body -->
+    <div id="chat-body" class="chat-body">
+        <!-- Messages will appear here -->
+        
+        <!-- Typing Indicator -->
+        <div id="typing-indicator" class="typing-indicator message bot">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Footer -->
+    <div class="chat-footer">
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                id="chat-input" 
+                class="chat-input" 
+                placeholder="Type your message..."
+                autocomplete="off"
+            >
+            <button id="send-btn" class="send-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="../js/resident-dashboard.js"></script>
+<script type="module" src="../js/chatbot.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Residents</title>
+    <link rel="stylesheet" href="../css/residents.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script type="module" src="../js/residents.js"></script>
+</head>
+<body>
+
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-users"></i>
+                <h1>Residents</h1>
+            </div>
+            <div class="user-info">
+                <div class="avatar">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="user-details">
+                    <p class="user-name" id="user-welcome">Admin</p>
+                    <p class="user-role" id="user-role">Staff</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" id="back-button" class="nav-item">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Dashboard</span>
+            </a>
+            <a href="resident-history.html" class="nav-item">
+                <i class="fas fa-archive"></i>
+                <span>Archived Residents</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="stats-summary">
+                <div class="stat-mini">
+                    <i class="fas fa-users"></i>
+                    <div>
+                        <span class="stat-mini-value" id="total-residents">0</span>
+                        <span class="stat-mini-label">Total</span>
+                    </div>
+                </div>
+                <div class="stat-mini active">
+                    <i class="fas fa-user-check"></i>
+                    <div>
+                        <span class="stat-mini-value" id="active-residents">0</span>
+                        <span class="stat-mini-label">Active</span>
+                    </div>
+                </div>
+                <div class="stat-mini inactive">
+                    <i class="fas fa-user-times"></i>
+                    <div>
+                        <span class="stat-mini-value" id="inactive-residents">0</span>
+                        <span class="stat-mini-label">Inactive</span>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="#" id="logout-button" class="nav-item logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <div class="content-header">
+            <div>
+                <h2><i class="fas fa-users-cog"></i> Manage Residents</h2>
+                <p class="welcome-text">View, add, edit, and manage all residents</p>
+            </div>
+            <button class="btn-primary" id="openAddResidentModal">
+                <i class="fas fa-user-plus"></i> Add New Resident
+            </button>
+        </div>
+
+        <!-- Search and Filter Bar -->
+        <div class="search-section">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-bar" placeholder="Search residents by name, email, or contact..." onkeyup="searchResidents()">
+            </div>
+            <select id="status-filter" class="filter-select" onchange="filterByStatus()">
+                <option value="all">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+            <button class="btn-secondary" onclick="loadResidents()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+
+        <!-- Residents Grid -->
+        <div class="residents-grid" id="residents-grid">
+            <div class="loading-card">
+                <i class="fas fa-spinner fa-spin" style="font-size: 48px; color: #667eea; margin-bottom: 20px;"></i>
+                <p style="font-size: 18px; color: #718096;">Loading residents...</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Add Resident Modal -->
+<div id="addResidentModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-plus"></i> Add New Resident</h3>
+            <button class="close-modal" onclick="closeAddResidentModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="add-resident-form">
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h4 class="section-title"><i class="fas fa-user"></i> Personal Information</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name <span class="required">*</span></label>
+                            <input type="text" id="first-name" required placeholder="First name">
+                        </div>
+                        <div class="form-group">
+                            <label>Middle Name</label>
+                            <input type="text" id="middle-name" placeholder="Middle name">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name <span class="required">*</span></label>
+                            <input type="text" id="last-name" required placeholder="Last name">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Birthdate <span class="required">*</span></label>
+                            <input type="date" id="birthdate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Age</label>
+                            <input type="number" id="age" readonly placeholder="Auto-calculated">
+                        </div>
+                        <div class="form-group">
+                            <label>Gender <span class="required">*</span></label>
+                            <select id="gender" required>
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Civil Status <span class="required">*</span></label>
+                            <select id="civil-status" required>
+                                <option value="">Select</option>
+                                <option value="Single">Single</option>
+                                <option value="Married">Married</option>
+                                <option value="Widowed">Widowed</option>
+                                <option value="Separated">Separated</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <h4 class="section-title"><i class="fas fa-address-book"></i> Contact Information</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Contact Number <span class="required">*</span></label>
+                            <input type="tel" id="contact-number" class="phone-input" required placeholder="+63 XXXXXXXXXX">
+                        </div>
+                        <div class="form-group">
+                            <label>House/Purok Number <span class="required">*</span></label>
+                            <input type="text" id="house-number" required placeholder="e.g., Purok 5 or #66">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Complete Address <span class="required">*</span></label>
+                            <input type="text" id="address" required readonly 
+                                  value="Barangay Lipay, Villasis, Pangasinan"
+                                  style="background: #f7fafc; color: #718096;">
+                        </div>
+                    </div>
+                </div>
+                   
+                <!-- Additional Information -->
+                <div class="form-section">
+                    <h4 class="section-title"><i class="fas fa-info-circle"></i> Additional Information</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Occupation</label>
+                            <input type="text" id="occupation" placeholder="Occupation">
+                        </div>
+                        <div class="form-group">
+                            <label>Education <span class="required">*</span></label>
+                            <select id="education" required>
+                                <option value="">Select</option>
+                                <option value="Elementary">Elementary</option>
+                                <option value="High School">High School</option>
+                                <option value="College">College</option>
+                                <option value="Vocational">Vocational</option>
+                                <option value="Postgraduate">Postgraduate</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Special Categories</label>
+                            <select id="special-categories">
+                                <option value="None">None</option>
+                                <option value="Senior Citizen">Senior Citizen</option>
+                                <option value="PWD">PWD</option>
+                                <option value="4Ps Beneficiary">4Ps Beneficiary</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Voter Info</label>
+                            <input type="text" id="voter-info" placeholder="Voter ID">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeAddResidentModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="submitAddResident">
+                        <span id="addResidentText"><i class="fas fa-plus"></i> Add Resident</span>
+                        <span id="addResidentLoader" class="loader" style="display: none;"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Resident Modal -->
+<div id="editResidentModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-edit"></i> Edit Resident</h3>
+            <button class="close-modal" onclick="closeEditModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="edit-resident-form">
+                <input type="hidden" id="edit-resident-id">
+                
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h4 class="section-title"><i class="fas fa-user"></i> Personal Information</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name <span class="required">*</span></label>
+                            <input type="text" id="edit-first-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Middle Name</label>
+                            <input type="text" id="edit-middle-name">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name <span class="required">*</span></label>
+                            <input type="text" id="edit-last-name" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Birthdate <span class="required">*</span></label>
+                            <input type="date" id="edit-birthdate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Age</label>
+                            <input type="number" id="edit-age" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Gender <span class="required">*</span></label>
+                            <select id="edit-gender" required>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Civil Status <span class="required">*</span></label>
+                            <select id="edit-civil-status" required>
+                                <option value="Single">Single</option>
+                                <option value="Married">Married</option>
+                                <option value="Widowed">Widowed</option>
+                                <option value="Separated">Separated</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <h4 class="section-title"><i class="fas fa-address-book"></i> Contact Information</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Contact Number <span class="required">*</span></label>
+                            <input type="tel" id="edit-contact-number" class="phone-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label>House/Purok Number <span class="required">*</span></label>
+                            <input type="text" id="edit-house-number" required placeholder="e.g., Purok 5 or #66">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Complete Address <span class="required">*</span></label>
+                            <input type="text" id="edit-address" required readonly 
+                                  value="Barangay Lipay, Villasis, Pangasinan"
+                                  style="background: #f7fafc; color: #718096;">
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Additional Information -->
+                <div class="form-section">
+                    <h4 class="section-title"><i class="fas fa-info-circle"></i> Additional Information</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Occupation</label>
+                            <input type="text" id="edit-occupation">
+                        </div>
+                        <div class="form-group">
+                            <label>Education <span class="required">*</span></label>
+                            <select id="edit-education" required>
+                                <option value="Elementary">Elementary</option>
+                                <option value="High School">High School</option>
+                                <option value="College">College</option>
+                                <option value="Vocational">Vocational</option>
+                                <option value="Postgraduate">Postgraduate</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Special Categories</label>
+                            <select id="edit-special-categories">
+                                <option value="None">None</option>
+                                <option value="Senior Citizen">Senior Citizen</option>
+                                <option value="PWD">PWD</option>
+                                <option value="4Ps Beneficiary">4Ps Beneficiary</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Voter Info</label>
+                            <input type="text" id="edit-voter-info">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- View Details Modal -->
+<div id="viewDetailsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-id-card"></i> Resident Details</h3>
+            <button class="close-modal" onclick="closeViewModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="view-details-body">
+            <!-- Content will be dynamically inserted -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeViewModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
