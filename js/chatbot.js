@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
     createChatSession(); // Create session immediately
 });
 
+let chatStatusListener = null; // Listen to chat status changes
+
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -37,14 +39,17 @@ onAuthStateChanged(auth, async (user) => {
         const status = await checkChatStatus();
         if (status === 'waiting' || status === 'active') {
             chatTransferredToStaff = true;
-            hasLoadedHistory = true; // Prevent welcome message
+            hasLoadedHistory = true;
             listenForStaffResponses();
         }
+        
+        // ✅ NEW: Listen for status changes (resolved)
+        listenForChatStatusChanges();
         
         // Load history first
         await loadChatHistory();
         
-        // ✅ Show welcome message ONLY if appropriate (after history is checked)
+        // Show welcome message ONLY if appropriate
         setTimeout(() => {
             showInitialWelcome();
         }, 500);
@@ -184,8 +189,8 @@ function addBotMessage(message, showQuickActions = false, skipSave = false) {
             `;
         }
 
-        // ✅ FIX 3: Properly format message with HTML support
-        // Replace \n with <br> for line breaks
+        // ✅ FIX: Don't escape bot messages - they contain intentional HTML
+        // Just replace newlines with <br> tags
         const formattedMessage = message.replace(/\n/g, '<br>');
 
         messageDiv.innerHTML = `
@@ -205,7 +210,6 @@ function addBotMessage(message, showQuickActions = false, skipSave = false) {
         }
     }, 1000);
 }
-
 
 // Show typing indicator
 function showTypingIndicator() {
@@ -613,6 +617,17 @@ window.transferToStaff = async function() {
     }
 
     try {
+        // ✅ Check if there's already an active chat with staff
+        const chatDoc = await getDoc(doc(db, "chats", chatSession));
+        if (chatDoc.exists()) {
+            const currentStatus = chatDoc.data().status;
+            
+            if (currentStatus === 'waiting' || currentStatus === 'active') {
+                addBotMessage("You're already connected with our staff team! A staff member will respond shortly.");
+                return;
+            }
+        }
+
         const chatRef = doc(db, "chats", chatSession);
         
         await updateDoc(chatRef, {
@@ -621,9 +636,8 @@ window.transferToStaff = async function() {
             unreadStaff: true
         });
 
-        // ✅ Set flags to stop bot responses and prevent welcome messages
         chatTransferredToStaff = true;
-        hasLoadedHistory = true; // Prevent any future welcome messages
+        hasLoadedHistory = true;
 
         addBotMessage(
             "✅ <strong>Your chat has been transferred to our staff team!</strong><br><br>" +
@@ -661,8 +675,8 @@ function listenForStaffResponses() {
             if (change.type === "added" && !isFirstLoad) {
                 const message = change.doc.data();
                 
-                // Only show NEW staff messages (not from history)
-                if (message.sender === "staff") {
+                // Only show NEW staff/system messages (not from history)
+                if (message.sender === "staff" || message.sender === "system") {
                     const chatBody = document.getElementById('chat-body');
                     const time = message.timestamp ? 
                         new Date(message.timestamp.seconds * 1000).toLocaleTimeString('en-US', { 
@@ -673,14 +687,22 @@ function listenForStaffResponses() {
                     const messageDiv = document.createElement('div');
                     messageDiv.className = 'message bot';
                     
-                    // ✅ FIX: Don't escape staff messages - they may contain HTML
+                    let avatar = '👨‍💼';
+                    let label = 'Staff';
+                    
+                    if (message.sender === 'system') {
+                        avatar = '⚙️';
+                        label = 'System';
+                    }
+                    
+                    // ✅ FIX: Don't escape staff/system messages - allow HTML
                     const formattedMessage = message.message.replace(/\n/g, '<br>');
                     
                     messageDiv.innerHTML = `
-                        <div class="message-avatar">👨‍💼</div>
+                        <div class="message-avatar">${avatar}</div>
                         <div class="message-content">
                             <div class="message-bubble">${formattedMessage}</div>
-                            <div class="message-time">Staff • ${time}</div>
+                            <div class="message-time">${label} • ${time}</div>
                         </div>
                     `;
 
@@ -746,13 +768,13 @@ async function loadChatHistory() {
 
             messageDiv.className = className;
             
-            // ✅ FIX: Only escape HTML for USER messages, not bot/staff messages
+            // ✅ FIX: Only escape USER messages for security
+            // Bot, staff, and system messages should render HTML
             let formattedMessage;
             if (message.sender === 'user') {
-                // Escape user input for security
                 formattedMessage = escapeHtml(message.message).replace(/\n/g, '<br>');
             } else {
-                // Don't escape bot/staff messages - they contain intentional HTML
+                // Don't escape - allow HTML rendering for bot/staff/system
                 formattedMessage = message.message.replace(/\n/g, '<br>');
             }
 
@@ -807,6 +829,7 @@ async function createChatSession() {
     }
 
     try {
+        // Check for existing active chats
         const existingSessionQuery = query(
             collection(db, "chats"),
             where("residentId", "==", currentUser.uid),
@@ -819,28 +842,25 @@ async function createChatSession() {
             chatSession = existingDocs.docs[0].id;
             console.log("Using existing chat session:", chatSession);
         } else {
-            // ✅ FIX 2: Get actual resident name from Firestore
-            let residentName = "Resident"; // Default fallback
+            // ✅ Get actual resident name from residents collection
+            let residentName = "Resident";
             
             try {
-                const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    // Try to get full name from different possible fields
-                    residentName = userData.fullName || 
-                                  userData.name || 
-                                  `${userData.firstName || ''} ${userData.lastName || ''}`.trim() ||
-                                  currentUser.displayName ||
+                const residentDoc = await getDoc(doc(db, "residents", currentUser.email.toLowerCase()));
+                if (residentDoc.exists()) {
+                    const userData = residentDoc.data();
+                    residentName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 
+                                  userData.fullName || 
                                   currentUser.email.split('@')[0];
                 }
             } catch (error) {
-                console.error("Error fetching user data:", error);
+                console.error("Error fetching resident data:", error);
             }
             
             const chatRef = await addDoc(collection(db, "chats"), {
                 residentId: currentUser.uid,
                 residentEmail: currentUser.email,
-                residentName: residentName, // ✅ Use actual name
+                residentName: residentName,
                 status: "bot",
                 createdAt: serverTimestamp(),
                 lastMessage: null,
@@ -913,4 +933,206 @@ function showNotificationBadge() {
 function hideNotificationBadge() {
     const badge = document.getElementById('notification-badge');
     badge.classList.remove('show');
+}
+
+// ✅ NEW FUNCTION: Listen for chat status changes
+function listenForChatStatusChanges() {
+    if (!chatSession) return;
+
+    // Unsubscribe from previous listener if exists
+    if (chatStatusListener) {
+        chatStatusListener();
+    }
+
+    const chatRef = doc(db, "chats", chatSession);
+    
+    chatStatusListener = onSnapshot(chatRef, (docSnapshot) => {
+        if (docSnapshot.exists()) {
+            const data = docSnapshot.data();
+            const status = data.status;
+
+            // ✅ When status changes to "resolved"
+            if (status === 'resolved') {
+                handleChatResolved(data);
+            }
+        }
+    });
+}
+
+// ✅ NEW FUNCTION: Handle when chat is marked as resolved
+function handleChatResolved(chatData) {
+    const chatBody = document.getElementById('chat-body');
+    
+    // Stop listening for staff responses
+    if (messagesListener) {
+        messagesListener();
+        messagesListener = null;
+    }
+
+    // Reset flags
+    chatTransferredToStaff = false;
+
+    // Show resolved message
+    const resolvedDiv = document.createElement('div');
+    resolvedDiv.className = 'message system-message';
+    resolvedDiv.innerHTML = `
+        <div class="resolved-notification">
+            <div class="resolved-icon">✅</div>
+            <div class="resolved-content">
+                <h4>Chat Resolved</h4>
+                <p>This conversation has been marked as resolved by staff.</p>
+                ${chatData.resolutionNote ? `<div class="resolution-note"><strong>Resolution:</strong> ${escapeHtml(chatData.resolutionNote)}</div>` : ''}
+                <p class="resolved-time">
+                    ${chatData.resolvedAt ? new Date(chatData.resolvedAt.seconds * 1000).toLocaleString() : ''}
+                </p>
+            </div>
+        </div>
+        <div class="new-chat-section">
+            <p>Need more help?</p>
+            <button class="new-chat-btn" onclick="startNewChat()">
+                💬 Start New Conversation
+            </button>
+        </div>
+    `;
+
+    chatBody.appendChild(resolvedDiv);
+    scrollToBottom();
+
+    // Disable input
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    
+    if (chatInput) {
+        chatInput.disabled = true;
+        chatInput.placeholder = "This chat has been resolved. Start a new conversation to continue.";
+    }
+    if (sendBtn) {
+        sendBtn.disabled = true;
+    }
+
+    // Save resolved message to Firebase
+    saveSystemMessage("Chat has been resolved by staff. Start a new conversation if you need more help.");
+}
+
+// ✅ NEW FUNCTION: Start a new chat conversation
+window.startNewChat = async function() {
+    if (!currentUser) return;
+
+    try {
+        // Show loading state
+        const chatBody = document.getElementById('chat-body');
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message bot';
+        loadingDiv.innerHTML = `
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+                <div class="message-bubble">Starting new conversation...</div>
+            </div>
+        `;
+        chatBody.appendChild(loadingDiv);
+
+        // Unsubscribe from all listeners
+        if (messagesListener) {
+            messagesListener();
+            messagesListener = null;
+        }
+        if (chatStatusListener) {
+            chatStatusListener();
+            chatStatusListener = null;
+        }
+
+        // Get resident name
+        let residentName = "Resident";
+        try {
+            const residentDoc = await getDoc(doc(db, "residents", currentUser.email.toLowerCase()));
+            if (residentDoc.exists()) {
+                const userData = residentDoc.data();
+                residentName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 
+                              userData.fullName || 
+                              currentUser.email.split('@')[0];
+            }
+        } catch (error) {
+            console.error("Error fetching resident data:", error);
+        }
+
+        // Create new chat session
+        const chatRef = await addDoc(collection(db, "chats"), {
+            residentId: currentUser.uid,
+            residentEmail: currentUser.email,
+            residentName: residentName,
+            status: "bot",
+            createdAt: serverTimestamp(),
+            lastMessage: null,
+            unreadStaff: false
+        });
+
+        // Update global session
+        chatSession = chatRef.id;
+        chatTransferredToStaff = false;
+        hasLoadedHistory = false;
+
+        // Clear chat body
+        chatBody.innerHTML = `
+            <div id="typing-indicator" class="typing-indicator message bot">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <div class="typing-dots">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Re-enable input
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        
+        if (chatInput) {
+            chatInput.disabled = false;
+            chatInput.placeholder = "Type your message...";
+            chatInput.focus();
+        }
+        if (sendBtn) {
+            sendBtn.disabled = false;
+        }
+
+        // Start listening for status changes again
+        listenForChatStatusChanges();
+
+        // Show welcome message
+        setTimeout(() => {
+            addBotMessage(
+                "👋 Hello! I'm your Barangay assistant. How can I help you today?",
+                true
+            );
+        }, 500);
+
+        console.log("✅ New chat session created:", chatSession);
+
+    } catch (error) {
+        console.error("Error starting new chat:", error);
+        addBotMessage("Sorry, there was an error starting a new conversation. Please refresh the page.");
+    }
+};
+
+// ✅ NEW FUNCTION: Save system messages
+async function saveSystemMessage(message) {
+    if (!chatSession || !currentUser) return;
+
+    try {
+        const chatRef = doc(db, "chats", chatSession);
+        
+        await addDoc(collection(chatRef, "messages"), {
+            message: message,
+            sender: "system",
+            timestamp: serverTimestamp()
+        });
+
+    } catch (error) {
+        console.error("Error saving system message:", error);
+    }
 }
