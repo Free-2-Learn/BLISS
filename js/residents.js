@@ -128,6 +128,10 @@ function initializePage() {
     setupInputValidation();
     setupBirthdateListeners();
     
+    // ✅ Setup address auto-update for ADD form
+    updateCompleteAddress('house-number', 'address');
+    // Note: Edit form address update is handled in openEditModal()
+    
     // Load residents
     loadResidents();
 }
@@ -420,6 +424,15 @@ window.openEditModal = async function(residentId) {
 
     const resident = residentDoc.data();
 
+    // Extract house/purok number from complete address
+    const baseAddress = "Barangay Lipay, Villasis, Pangasinan";
+    let houseNumber = "";
+    
+    if (resident.address && resident.address !== baseAddress) {
+        // Extract house number (everything before the base address)
+        houseNumber = resident.address.replace(`, ${baseAddress}`, '').trim();
+    }
+
     document.getElementById("edit-resident-id").value = residentId;
     document.getElementById("edit-first-name").value = resident.firstName || "";
     document.getElementById("edit-middle-name").value = resident.middleName || "";
@@ -429,11 +442,15 @@ window.openEditModal = async function(residentId) {
     document.getElementById("edit-gender").value = resident.gender || "";
     document.getElementById("edit-civil-status").value = resident.civilStatus || "";
     document.getElementById("edit-contact-number").value = resident.contactNumber || "";
-    document.getElementById("edit-address").value = resident.address || "";
+    document.getElementById("edit-house-number").value = houseNumber; // Set extracted house number
+    document.getElementById("edit-address").value = resident.address || baseAddress;
     document.getElementById("edit-occupation").value = resident.occupation || "";
     document.getElementById("edit-education").value = resident.education || "";
     document.getElementById("edit-special-categories").value = resident.specialCategories || "";
     document.getElementById("edit-voter-info").value = resident.voterInfo || "";
+
+    // ✅ RE-INITIALIZE the address auto-update for edit modal
+    updateCompleteAddress('edit-house-number', 'edit-address');
 
     document.getElementById("editResidentModal").style.display = "block";
 };
@@ -467,6 +484,35 @@ async function handleEditResident(event) {
     } catch (error) {
         console.error("Error updating resident:", error);
         alert("Failed to update resident.");
+    }
+}
+
+function updateCompleteAddress(houseNumberId, addressId) {
+    const houseNumberInput = document.getElementById(houseNumberId);
+    const addressInput = document.getElementById(addressId);
+    
+    if (houseNumberInput && addressInput) {
+        // Remove any existing listeners to avoid duplicates
+        const newHouseNumberInput = houseNumberInput.cloneNode(true);
+        houseNumberInput.parentNode.replaceChild(newHouseNumberInput, houseNumberInput);
+        
+        newHouseNumberInput.addEventListener('input', function() {
+            const houseNumber = this.value.trim();
+            const baseAddress = "Barangay Lipay, Villasis, Pangasinan";
+            
+            if (houseNumber) {
+                addressInput.value = `${houseNumber}, ${baseAddress}`;
+            } else {
+                addressInput.value = baseAddress;
+            }
+        });
+        
+        // Trigger initial update if house number already has value
+        if (newHouseNumberInput.value.trim()) {
+            const houseNumber = newHouseNumberInput.value.trim();
+            const baseAddress = "Barangay Lipay, Villasis, Pangasinan";
+            addressInput.value = `${houseNumber}, ${baseAddress}`;
+        }
     }
 }
 
@@ -623,7 +669,7 @@ async function handleAddResident(event) {
         const gender = document.getElementById("gender").value;
         const civilStatus = document.getElementById("civil-status").value;
         const contactNumber = document.getElementById("contact-number").value.trim();
-        const address = document.getElementById("address").value.trim();
+        const address = document.getElementById("address").value.trim(); // This now includes house/purok
         const occupation = document.getElementById("occupation").value.trim();
         const education = document.getElementById("education").value;
         const specialCategories = document.getElementById("special-categories").value;
@@ -644,11 +690,9 @@ async function handleAddResident(event) {
                 if (authError.code === 'auth/email-already-in-use') {
                     console.warn(`⚠️ Email ${currentEmail} already in use, generating new one...`);
                     retryCount++;
-                    // Generate new email with counter
                     const baseEmail = `${firstName.toLowerCase().replace(/\s+/g, '.')}.${lastName.toLowerCase()}`;
                     currentEmail = `${baseEmail}${retryCount}@BMS.com`.toLowerCase();
                 } else {
-                    // Other auth errors should be thrown
                     throw authError;
                 }
             }
@@ -658,10 +702,9 @@ async function handleAddResident(event) {
             throw new Error('Unable to create unique email after multiple attempts');
         }
 
-        // Update customId to match the email that was successfully created
         const finalCustomId = currentEmail.toLowerCase();
 
-        // Save to Firestore
+        // Save to Firestore with complete address
         await setDoc(doc(db, "residents", finalCustomId), {
             id: finalCustomId,
             firstName,
@@ -673,7 +716,7 @@ async function handleAddResident(event) {
             gender,
             civilStatus,
             contactNumber,
-            address,
+            address, // Complete address with house/purok number
             occupation,
             education,
             specialCategories,
@@ -682,7 +725,6 @@ async function handleAddResident(event) {
             createdAt: new Date()
         });
 
-        // Log activity (analytics)
         const fullName = `${firstName} ${middleName} ${lastName}`.trim();
         await logActivity('created_resident', {
             residentId: finalCustomId,
