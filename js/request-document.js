@@ -22,6 +22,32 @@ const pendingRequestsContainer = document.getElementById("pending-requests-conta
 const completedRequestsContainer = document.getElementById("completed-requests-container");
 const residentNameDisplay = document.getElementById("resident-name");
 
+const APP_CONFIG = {
+  // ⚠️ IMPORTANT: Change this to your actual deployed website URL
+  PRODUCTION_URL: 'https://free-2-learn.github.io/BLISS/', // Your GitHub Pages URL
+  
+  // Smart URL detection
+  getBaseURL() {
+    const hostname = window.location.hostname;
+    
+    if (hostname === 'localhost' || 
+        hostname === '127.0.0.1' || 
+        hostname.startsWith('192.168') ||
+        hostname.startsWith('10.0')) {
+      console.log('🔧 Local environment detected, using production URL for QR codes');
+      return this.PRODUCTION_URL;
+    }
+    
+    console.log('🌐 Production environment detected, using current domain');
+    return window.location.origin;
+  },
+  
+  // Get document viewer URL
+  getDocumentViewerURL(verificationCode, requestId) {
+    return `${this.getBaseURL()}/view-document.html?code=${verificationCode}&id=${requestId}`;
+  }
+};
+
 let isSubmitting = false;
 
 // NEW: Filter state
@@ -714,8 +740,10 @@ window.downloadResidentQR = function(requestId, verificationCode, documentType) 
     const residentData = JSON.parse(sessionStorage.getItem("residentData"));
     const residentName = residentData ? `${residentData.firstName} ${residentData.lastName}` : "Resident";
     
-    // Create QR code
-    const qrCodeData = `${window.location.origin}/verify.html?code=${verificationCode}&id=${requestId}`;
+    // ✅ UPDATED: Use document viewer URL instead of verify.html
+    const qrCodeData = APP_CONFIG.getDocumentViewerURL(verificationCode, requestId);
+    
+    console.log("📱 Generating QR Code for:", qrCodeData);
     
     const qr = new QRious({
       value: qrCodeData,
@@ -727,7 +755,7 @@ window.downloadResidentQR = function(requestId, verificationCode, documentType) 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 500;
-    canvas.height = 600;
+    canvas.height = 620;
     
     // White background
     ctx.fillStyle = '#ffffff';
@@ -737,32 +765,42 @@ window.downloadResidentQR = function(requestId, verificationCode, documentType) 
     ctx.fillStyle = '#000000';
     ctx.font = 'bold 24px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('DOCUMENT VERIFICATION', canvas.width / 2, 40);
+    ctx.fillText('BARANGAY LIPAY', canvas.width / 2, 40);
     
-    // Barangay info
-    ctx.font = '18px Arial';
-    ctx.fillText('Barangay Lipay, Villasis, Pangasinan', canvas.width / 2, 70);
+    // Subtitle
+    ctx.font = '16px Arial';
+    ctx.fillText('Document Access Portal', canvas.width / 2, 65);
+    
+    // Info
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#666666';
+    ctx.fillText('Villasis, Pangasinan', canvas.width / 2, 85);
     
     // Document type
+    ctx.fillStyle = '#000000';
     ctx.font = 'bold 16px Arial';
-    ctx.fillText(`Document: ${documentType}`, canvas.width / 2, 100);
-    
-    // Resident name
-    ctx.font = '14px Arial';
-    ctx.fillText(`For: ${residentName}`, canvas.width / 2, 120);
+    ctx.fillText(`Document: ${documentType}`, canvas.width / 2, 110);
     
     // QR code
     const qrImage = new Image();
     qrImage.src = qr.toDataURL();
     qrImage.onload = function() {
-      ctx.drawImage(qrImage, 50, 140, 400, 400);
+      ctx.drawImage(qrImage, 50, 130, 400, 400);
+      
+      // Instructions
+      ctx.font = 'bold 16px Arial';
+      ctx.fillStyle = '#667eea';
+      ctx.fillText('📱 Scan to View & Download Document', canvas.width / 2, 550);
       
       // Verification code
       ctx.font = '14px monospace';
-      ctx.fillText(`Code: ${verificationCode}`, canvas.width / 2, 560);
+      ctx.fillStyle = '#000000';
+      ctx.fillText(`Code: ${verificationCode}`, canvas.width / 2, 575);
       
+      // Footer note
       ctx.font = '12px Arial';
-      ctx.fillText('Scan to verify document authenticity', canvas.width / 2, 580);
+      ctx.fillStyle = '#999999';
+      ctx.fillText('Scan with any QR code scanner app', canvas.width / 2, 600);
       
       // Download
       canvas.toBlob(function(blob) {
@@ -774,6 +812,8 @@ window.downloadResidentQR = function(requestId, verificationCode, documentType) 
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        
+        console.log("✅ QR Code downloaded successfully");
         
         // Log activity
         logActivity("downloaded_qr", {
