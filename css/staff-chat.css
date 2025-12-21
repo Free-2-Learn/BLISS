@@ -782,3 +782,266 @@ body {
     gap: 10px;
     margin-top: 15px;
 }
+
+/* Add these styles to your staff-chat.css file */
+
+/* Status Badge for Resolved */
+.status-badge.resolved {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    color: #2e7d32;
+    border: 1px solid #4caf50;
+    font-weight: 600;
+}
+
+/* Chat item with resolved status */
+.chat-item .status-badge.resolved {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* Resolved button styling */
+.btn.btn-success {
+    background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+    background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
+}
+
+.btn.btn-success:active {
+    transform: translateY(0);
+}
+
+/* Reopen button (when chat is resolved) */
+.btn.btn-warning {
+    background: linear-gradient(135deg, #ff9800 0%, #ffa726 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+}
+
+.btn.btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+    background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%);
+}
+
+/* Transfer Modal Styling */
+.transfer-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.transfer-modal .modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease;
+}
+
+.transfer-modal h3 {
+    margin: 0 0 16px 0;
+    font-size: 24px;
+    color: #2d3748;
+}
+
+.transfer-modal p {
+    margin: 0 0 20px 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+.transfer-select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.transfer-select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.modal-actions .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-actions .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.modal-actions .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.modal-actions .btn-secondary {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+.modal-actions .btn-secondary:hover {
+    background: #cbd5e0;
+}
+
+/* Transfer Notification */
+.transfer-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    max-width: 400px;
+    z-index: 10001;
+    animation: slideInRight 0.4s ease;
+    border-left: 4px solid #667eea;
+}
+
+.notification-content p {
+    margin: 0 0 12px 0;
+    color: #2d3748;
+    font-size: 14px;
+}
+
+.notification-content strong {
+    font-size: 16px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.notification-actions .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.notification-actions .btn-success {
+    background: #4caf50;
+    color: white;
+}
+
+.notification-actions .btn-success:hover {
+    background: #66bb6a;
+}
+
+.notification-actions .btn-danger {
+    background: #f44336;
+    color: white;
+}
+
+.notification-actions .btn-danger:hover {
+    background: #ef5350;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .transfer-modal .modal-content {
+        padding: 24px;
+        max-width: 90%;
+    }
+
+    .transfer-notification {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+}
