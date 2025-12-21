@@ -109,8 +109,9 @@ async function loadUserProfile() {
         document.getElementById("profile-full-name").textContent = `${userData.firstName} ${userData.middleName || ''} ${userData.lastName}`;
         document.getElementById("profile-email").textContent = userData.email;
 
-        // Display full address
-        const fullAddress = `${userData.address || '-'}, Lipay, Villasis, Pangasinan`;
+        // ✅ FIXED: Display full address correctly
+        // The address field should already contain the complete address from the database
+        const fullAddress = userData.address || 'Barangay Lipay, Villasis, Pangasinan';
         
         // Display information
         document.getElementById("resident-first-name").textContent = userData.firstName || "-";
@@ -119,7 +120,7 @@ async function loadUserProfile() {
         document.getElementById("resident-email").textContent = userData.email || "-";
         document.getElementById("resident-contact-number").textContent = userData.contactNumber || "-";
         document.getElementById("resident-gender").textContent = userData.gender || "-";
-        document.getElementById("resident-address").textContent = fullAddress;
+        document.getElementById("resident-address").textContent = fullAddress; // ✅ Show complete address
         document.getElementById("resident-occupation").textContent = userData.occupation || "-";
         document.getElementById("resident-education").textContent = userData.education || "-";
         document.getElementById("resident-special-categories").textContent = userData.specialCategories || "None";
@@ -129,7 +130,6 @@ async function loadUserProfile() {
 
         // Check if password change is required
         const hasChangedOnce = userData.hasChangedPasswordOnce;
-        const lastChange = userData.lastPasswordChange?.toDate();
         const shouldForceChange = !hasChangedOnce;
 
         if (shouldForceChange) {
@@ -148,7 +148,19 @@ function fillEditForm(userData) {
     document.getElementById("edit-last-name").value = userData.lastName || "";
     document.getElementById("edit-contact-number").value = userData.contactNumber || "";
     document.getElementById("edit-gender").value = userData.gender || "";
-    document.getElementById("edit-address").value = userData.address || "";
+    
+    // ✅ FIXED: Extract house/purok number from complete address
+    const baseAddress = "Barangay Lipay, Villasis, Pangasinan";
+    let houseNumber = "";
+    
+    if (userData.address && userData.address !== baseAddress) {
+        // Extract house number (everything before the base address)
+        houseNumber = userData.address.replace(`, ${baseAddress}`, '').trim();
+    }
+    
+    // Set only the house/purok number in the edit field
+    document.getElementById("edit-address").value = houseNumber;
+    
     document.getElementById("edit-occupation").value = userData.occupation || "";
     document.getElementById("edit-education").value = userData.education || "";
     document.getElementById("edit-special-categories").value = userData.specialCategories || "None";
@@ -231,7 +243,7 @@ document.getElementById("edit-profile-form").addEventListener("submit", async fu
     const lastName = document.getElementById("edit-last-name").value.trim();
     const rawContact = document.getElementById("edit-contact-number").value.replace(/\s+/g, '');
     const gender = document.getElementById("edit-gender").value;
-    const address = document.getElementById("edit-address").value.trim();
+    const houseNumber = document.getElementById("edit-address").value.trim(); // ✅ This is house/purok only
     const occupation = document.getElementById("edit-occupation").value.trim();
     const education = document.getElementById("edit-education").value;
     const specialCategories = document.getElementById("edit-special-categories").value;
@@ -257,7 +269,7 @@ document.getElementById("edit-profile-form").addEventListener("submit", async fu
         return;
     }
 
-    if (!address) {
+    if (!houseNumber) {
         alert("❌ Please enter your house number or purok.");
         return;
     }
@@ -268,6 +280,10 @@ document.getElementById("edit-profile-form").addEventListener("submit", async fu
     try {
         const fullName = `${firstName} ${middleName} ${lastName}`.trim();
         
+        // ✅ FIXED: Build complete address with house/purok + base address
+        const baseAddress = "Barangay Lipay, Villasis, Pangasinan";
+        const completeAddress = `${houseNumber}, ${baseAddress}`;
+        
         // Store old data for comparison
         const oldData = { ...currentUserData };
         
@@ -277,7 +293,7 @@ document.getElementById("edit-profile-form").addEventListener("submit", async fu
             lastName,
             contactNumber: rawContact,
             gender,
-            address,
+            address: completeAddress, // ✅ Save complete address
             occupation,
             education,
             specialCategories,
@@ -289,7 +305,7 @@ document.getElementById("edit-profile-form").addEventListener("submit", async fu
             changes: {
                 name: fullName,
                 contact: rawContact,
-                address: address,
+                address: completeAddress,
                 occupation: occupation
             }
         });
@@ -304,7 +320,7 @@ document.getElementById("edit-profile-form").addEventListener("submit", async fu
             newData: {
                 name: fullName,
                 contact: rawContact,
-                address: address
+                address: completeAddress
             }
         });
 
