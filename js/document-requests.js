@@ -26,6 +26,32 @@ const storage = getStorage();
 // Firestore reference
 const requestCollection = collection(db, "documentRequests");
 
+const APP_CONFIG = {
+  // ⚠️ IMPORTANT: Change this to your actual deployed website URL
+  PRODUCTION_URL: 'https://free-2-learn.github.io/BLISS/', // Change to your domain!
+  
+  // Smart URL detection
+  getBaseURL() {
+    const hostname = window.location.hostname;
+    
+    if (hostname === 'localhost' || 
+        hostname === '127.0.0.1' || 
+        hostname.startsWith('192.168') ||
+        hostname.startsWith('10.0')) {
+      console.log('🔧 Local environment detected, using production URL for QR codes');
+      return this.PRODUCTION_URL;
+    }
+    
+    console.log('🌐 Production environment detected, using current domain');
+    return window.location.origin;
+  },
+  
+  // Get document viewer URL (not verification page)
+  getDocumentViewerURL(verificationCode, requestId) {
+    return `${this.getBaseURL()}/view-document.html?code=${verificationCode}&id=${requestId}`;
+  }
+};
+
 // BARANGAY CONFIGURATION
 const BARANGAY_CONFIG = {
   name: "BARANGAY LIPAY",
@@ -919,62 +945,80 @@ async function updateRequestStatus(requestId, status, reason = "") {
 // =====================================================
 window.downloadQRCode = function(requestId, verificationCode, residentName) {
   try {
-    // Create QR code
-    const qrCodeData = `${window.location.origin}/verify.html?code=${verificationCode}&id=${requestId}`;
+    // ✅ UPDATED: QR code points to document viewer page
+    const viewerURL = APP_CONFIG.getDocumentViewerURL(verificationCode, requestId);
+    
+    console.log("📱 Generating QR Code for:", viewerURL);
     
     const qr = new QRious({
-      value: qrCodeData,
-      size: 400, // Larger size for standalone QR
-      level: 'H' // High error correction
+      value: viewerURL,
+      size: 400,
+      level: 'H'
     });
     
-    // Create a canvas with white background and QR code
+    // Create canvas
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 500;
-    canvas.height = 600;
+    canvas.height = 620;
     
     // White background
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Add title
+    // Title
     ctx.fillStyle = '#000000';
     ctx.font = 'bold 24px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('DOCUMENT VERIFICATION', canvas.width / 2, 40);
+    ctx.fillText('BARANGAY LIPAY', canvas.width / 2, 40);
     
-    // Add barangay info
-    ctx.font = '18px Arial';
-    ctx.fillText('Barangay Lipay, Villasis, Pangasinan', canvas.width / 2, 70);
+    // Subtitle
+    ctx.font = '16px Arial';
+    ctx.fillText('Document Access Portal', canvas.width / 2, 65);
     
-    // Add resident name
-    ctx.font = 'bold 16px Arial';
-    ctx.fillText(`For: ${residentName}`, canvas.width / 2, 100);
+    // Info
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#666666';
+    ctx.fillText('Villasis, Pangasinan', canvas.width / 2, 85);
+    
+    // Resident name
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 18px Arial';
+    ctx.fillText(`For: ${residentName}`, canvas.width / 2, 110);
     
     // Add QR code
     const qrImage = new Image();
     qrImage.src = qr.toDataURL();
     qrImage.onload = function() {
-      ctx.drawImage(qrImage, 50, 120, 400, 400);
+      ctx.drawImage(qrImage, 50, 130, 400, 400);
       
-      // Add verification code below
+      // Instructions
+      ctx.font = 'bold 16px Arial';
+      ctx.fillStyle = '#667eea';
+      ctx.fillText('📱 Scan to View & Download Document', canvas.width / 2, 550);
+      
+      // Verification code
       ctx.font = '14px monospace';
-      ctx.fillText(`Code: ${verificationCode}`, canvas.width / 2, 540);
+      ctx.fillStyle = '#000000';
+      ctx.fillText(`Code: ${verificationCode}`, canvas.width / 2, 575);
       
+      // Footer note
       ctx.font = '12px Arial';
-      ctx.fillText('Scan to verify document authenticity', canvas.width / 2, 570);
+      ctx.fillStyle = '#999999';
+      ctx.fillText('Scan with any QR code scanner app', canvas.width / 2, 600);
       
       // Download
       canvas.toBlob(function(blob) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `QR_${verificationCode}_${residentName.replace(/\s+/g, '_')}.png`;
+        a.download = `QR_Document_${residentName.replace(/\s+/g, '_')}_${verificationCode}.png`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        
+        console.log("✅ QR Code downloaded successfully");
       });
     };
     
@@ -992,9 +1036,6 @@ function generateVerificationCode() {
 window.generateDocument = async function(requestId, residentId, documentType) {
   console.log("🔍 DIAGNOSTIC INFO:");
   console.log("Document Type:", documentType);
-  console.log("Document Type (typeof):", typeof documentType);
-  console.log("Document Type (trimmed):", documentType.trim());
-  console.log("Exact characters:", Array.from(documentType).map(c => c.charCodeAt(0)));
   
   const confirmGenerate = confirm(`Generate ${documentType} for this resident?`);
   if (!confirmGenerate) return;
@@ -1024,20 +1065,18 @@ window.generateDocument = async function(requestId, residentId, documentType) {
     const residentData = residentSnap.data();
     console.log("✅ Resident data found");
 
-    // Generate verification code
+    // ✅ UPDATED: Generate QR code that points to document viewer
     const verificationCode = generateVerificationCode();
-    const qrCodeData = `${window.location.origin}/verify.html?code=${verificationCode}&id=${requestId}`;
+    const viewerURL = APP_CONFIG.getDocumentViewerURL(verificationCode, requestId);
+    
+    console.log("📱 Document Viewer URL:", viewerURL);
 
-    // Get request data for purpose
+    // Get request data
     const requestRef = doc(db, "documentRequests", requestId);
     const requestSnap = await getDoc(requestRef);
     const requestData = requestSnap.exists() ? requestSnap.data() : {};
 
-    console.log("📋 About to call createPDF with:");
-    console.log("  - documentType:", documentType);
-    console.log("  - purpose:", requestData.purpose);
-
-    // Generate PDF based on document type
+    // Generate PDF
     const pdfBlob = await createPDF(residentData, documentType, requestData.purpose || "legal purposes");
 
     // Upload to Firebase Storage
@@ -1053,10 +1092,10 @@ window.generateDocument = async function(requestId, residentId, documentType) {
     const userName = currentUserData?.fullName || currentUser.displayName || currentUser.email;
     const userRole = currentUserData?.role || 'staff';
 
-    // Update Firestore with user tracking INCLUDING ROLE
+    // Update Firestore - store viewer URL in qrCodeData
     await updateDoc(requestRef, {
       documentUrl: downloadURL,
-      qrCodeData: qrCodeData,
+      qrCodeData: viewerURL, // QR code points to viewer page
       verificationCode: verificationCode,
       generatedAt: Timestamp.now(),
       generatedBy: currentUser.email,
@@ -1072,21 +1111,22 @@ window.generateDocument = async function(requestId, residentId, documentType) {
       }
     });
 
-    // ✅ LOG ACTIVITY
+    // Log activity
     await logActivity("document_generated", {
       requestId: requestId,
       residentId: residentId,
       residentName: residentData.firstName + " " + residentData.lastName,
       documentType: documentType,
       verificationCode: verificationCode,
+      viewerURL: viewerURL,
       generatedBy: userName,
       generatedByRole: userRole
     });
 
-    // ✅ LOG TO DOCUMENT HISTORY
     await logDocumentHistory(requestId, "document_generated", {
       documentType: documentType,
       verificationCode: verificationCode,
+      viewerURL: viewerURL,
       generatedBy: userName,
       generatedByRole: userRole,
       fileName: fileName
