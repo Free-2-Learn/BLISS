@@ -313,11 +313,14 @@ function updateStatistics() {
         waiting: 0,
         active: 0,
         bot: 0,
-        closed: 0
+        resolved: 0 // Changed from 'closed' to 'resolved'
     };
 
     allChats.forEach(chat => {
-        if (counts.hasOwnProperty(chat.status)) {
+        // Also count 'closed' as 'resolved' for backwards compatibility
+        if (chat.status === 'closed' || chat.status === 'resolved') {
+            counts.resolved++;
+        } else if (counts.hasOwnProperty(chat.status)) {
             counts[chat.status]++;
         }
     });
@@ -325,13 +328,14 @@ function updateStatistics() {
     document.getElementById('waiting-count').textContent = counts.waiting;
     document.getElementById('active-count').textContent = counts.active;
     document.getElementById('bot-count').textContent = counts.bot;
-    document.getElementById('closed-count').textContent = counts.closed;
+    document.getElementById('closed-count').textContent = counts.resolved; // Update display
 
     document.getElementById('tab-waiting').textContent = counts.waiting;
     document.getElementById('tab-active').textContent = counts.active;
     document.getElementById('tab-bot').textContent = counts.bot;
-    document.getElementById('tab-closed').textContent = counts.closed;
+    document.getElementById('tab-closed').textContent = counts.resolved; // Update display
 }
+
 
 // Render chat list
 function renderChatList(searchTerm = '') {
@@ -340,7 +344,12 @@ function renderChatList(searchTerm = '') {
 
     // Filter chats
     let filteredChats = allChats.filter(chat => {
-        if (currentFilter !== 'all' && chat.status !== currentFilter) {
+        // Handle 'closed' filter to show both 'closed' and 'resolved'
+        if (currentFilter === 'closed') {
+            if (chat.status !== 'closed' && chat.status !== 'resolved') {
+                return false;
+            }
+        } else if (currentFilter !== 'all' && chat.status !== currentFilter) {
             return false;
         }
 
@@ -386,6 +395,9 @@ function createChatItem(chat) {
     const time = formatTime(chat.createdAt);
     const lastMsg = chat.lastMessage?.text || 'No messages yet';
     const preview = lastMsg.length > 50 ? lastMsg.substring(0, 50) + '...' : lastMsg;
+    
+    // Show 'resolved' for both 'closed' and 'resolved' status
+    const displayStatus = (chat.status === 'closed' || chat.status === 'resolved') ? 'resolved' : chat.status;
 
     div.innerHTML = `
         <div class="chat-item-header">
@@ -394,7 +406,7 @@ function createChatItem(chat) {
         </div>
         <div class="chat-preview">${preview}</div>
         <div class="chat-meta">
-            <span class="status-badge ${chat.status}">${chat.status.toUpperCase()}</span>
+            <span class="status-badge ${displayStatus}">${displayStatus.toUpperCase()}</span>
             ${chat.unreadStaff ? '<span class="unread-badge">NEW</span>' : ''}
         </div>
     `;
@@ -440,21 +452,25 @@ async function loadChatConversation(chatId) {
         document.getElementById('resident-email').textContent = chatData.residentEmail;
 
         const statusBadge = document.getElementById('chat-status-badge');
-        statusBadge.className = `status-badge ${chatData.status}`;
-        statusBadge.textContent = chatData.status.toUpperCase();
+        const displayStatus = (chatData.status === 'closed' || chatData.status === 'resolved') ? 'resolved' : chatData.status;
+        statusBadge.className = `status-badge ${displayStatus}`;
+        statusBadge.textContent = displayStatus.toUpperCase();
 
         const takeOverBtn = document.getElementById('take-over-btn');
         const transferBtn = document.getElementById('transfer-chat-btn');
+        const resolveBtn = document.getElementById('resolve-chat-btn');
         const messageInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-message-btn');
         const deleteBtn = document.getElementById('delete-chat-btn');
 
         const isOwner = chatData.takenOverBy === currentUser.email;
         const isCaptain = currentUserRole === 'captain';
+        const isResolved = chatData.status === 'resolved' || chatData.status === 'closed';
 
         if (chatData.status === 'waiting') {
             takeOverBtn.style.display = 'block';
             transferBtn.style.display = 'none';
+            resolveBtn.style.display = 'none';
             messageInput.disabled = true;
             messageInput.placeholder = "Take over this chat to start responding...";
             sendBtn.disabled = true;
@@ -464,11 +480,13 @@ async function loadChatConversation(chatId) {
             
             if (isOwner || isCaptain) {
                 transferBtn.style.display = 'block';
+                resolveBtn.style.display = 'block';
                 messageInput.disabled = false;
                 messageInput.placeholder = "Type your message...";
                 sendBtn.disabled = false;
             } else {
                 transferBtn.style.display = 'block';
+                resolveBtn.style.display = 'none';
                 messageInput.disabled = true;
                 messageInput.placeholder = `This chat is handled by ${chatData.takenOverBy}. You can request a transfer.`;
                 sendBtn.disabled = true;
@@ -477,26 +495,41 @@ async function loadChatConversation(chatId) {
         } else if (chatData.status === 'bot') {
             takeOverBtn.style.display = 'none';
             transferBtn.style.display = 'none';
+            resolveBtn.style.display = 'none';
             messageInput.disabled = true;
             messageInput.placeholder = "This chat is being handled by the bot...";
             sendBtn.disabled = true;
             
-        } else if (chatData.status === 'closed') {
+        } else if (isResolved) {
+            // Resolved chats
             takeOverBtn.style.display = 'none';
             transferBtn.style.display = 'none';
+            
+            // Only captain or original owner can reopen
+            if (isCaptain || isOwner) {
+                resolveBtn.style.display = 'block';
+                resolveBtn.textContent = '🔄 Reopen Chat';
+                resolveBtn.className = 'btn btn-warning';
+            } else {
+                resolveBtn.style.display = 'none';
+            }
+            
             messageInput.disabled = true;
-            messageInput.placeholder = "This chat is closed.";
+            messageInput.placeholder = "This chat is resolved.";
             sendBtn.disabled = true;
         }
 
         if (deleteBtn && isCaptain) {
-            deleteBtn.style.display = chatData.status === 'closed' ? 'block' : 'none';
+            deleteBtn.style.display = isResolved ? 'block' : 'none';
         }
 
         const chatOwnerInfo = document.getElementById('chat-owner-info');
         if (chatData.status === 'active' && chatData.takenOverBy) {
             chatOwnerInfo.style.display = 'block';
             chatOwnerInfo.textContent = `Handled by: ${chatData.takenOverBy}`;
+        } else if (isResolved && chatData.resolvedBy) {
+            chatOwnerInfo.style.display = 'block';
+            chatOwnerInfo.textContent = `Resolved by: ${chatData.resolvedBy} on ${chatData.resolvedAt ? new Date(chatData.resolvedAt.seconds * 1000).toLocaleString() : 'recently'}`;
         } else {
             chatOwnerInfo.style.display = 'none';
         }
@@ -564,10 +597,21 @@ function createMessageElement(message) {
         label = 'System';
     }
 
+    // ✅ FIX: Only escape USER messages for security
+    // Bot, staff, and system messages should render HTML properly
+    let formattedMessage;
+    if (message.sender === 'user') {
+        // Escape user input for security, then replace newlines
+        formattedMessage = escapeHtml(message.message).replace(/\n/g, '<br>');
+    } else {
+        // Don't escape bot/staff/system messages - they may contain intentional HTML/formatting
+        formattedMessage = message.message.replace(/\n/g, '<br>');
+    }
+
     div.innerHTML = `
         <div class="message-avatar">${avatar}</div>
         <div class="message-content">
-            <div class="message-bubble">${escapeHtml(message.message)}</div>
+            <div class="message-bubble">${formattedMessage}</div>
             <div class="message-time">${label} • ${time}</div>
         </div>
     `;
@@ -773,29 +817,69 @@ window.requestTakeover = async function() {
 
 // Resolve chat
 async function resolveChat() {
-    if (!selectedChatId) return;
+    if (!selectedChatId || !currentChatData) return;
 
-    if (!confirm("Mark this chat as resolved?")) return;
+    const isResolved = currentChatData.status === 'resolved' || currentChatData.status === 'closed';
+    
+    // If already resolved, reopen it
+    if (isResolved) {
+        if (!confirm("Reopen this resolved chat?")) return;
+        
+        try {
+            await updateDoc(doc(db, "chats", selectedChatId), {
+                status: "active",
+                reopenedAt: serverTimestamp(),
+                reopenedBy: currentUser.email,
+                resolvedAt: null,
+                resolvedBy: null,
+                resolutionNote: null
+            });
+
+            await addDoc(collection(db, "chats", selectedChatId, "messages"), {
+                message: `🔄 Chat reopened by ${currentUser.email}`,
+                sender: "system",
+                timestamp: serverTimestamp()
+            });
+
+            alert("Chat has been reopened!");
+            loadChatConversation(selectedChatId);
+
+        } catch (error) {
+            console.error("Error reopening chat:", error);
+            alert("Failed to reopen chat.");
+        }
+        return;
+    }
+
+    // Otherwise, resolve the chat
+    const resolutionNote = prompt(
+        "Add a resolution note (this will be visible to the resident):",
+        "Your issue has been resolved. Thank you for contacting us!"
+    );
+
+    if (resolutionNote === null) return; // User cancelled
 
     try {
-        await updateDoc(doc(db, "chats", selectedChatId), {
-            status: "closed",
-            closedAt: serverTimestamp(),
-            closedBy: currentUser.email
+        const chatRef = doc(db, "chats", selectedChatId);
+        
+        await updateDoc(chatRef, {
+            status: "resolved",
+            resolvedAt: serverTimestamp(),
+            resolvedBy: currentUser.email,
+            resolutionNote: resolutionNote || "Chat resolved by staff",
+            unreadStaff: false
         });
 
         await addDoc(collection(db, "chats", selectedChatId, "messages"), {
-            message: "✓ This chat has been marked as resolved by staff.",
+            message: `✅ Chat marked as resolved by ${currentUser.email}\n\nResolution: ${resolutionNote}`,
             sender: "system",
             timestamp: serverTimestamp()
         });
 
-        alert("Chat marked as resolved!");
+        alert("✅ Chat has been marked as resolved!");
 
-        selectedChatId = null;
-        currentChatData = null;
-        document.getElementById('empty-state').style.display = 'flex';
-        document.getElementById('chat-area').style.display = 'none';
+        // Refresh the conversation to show new state
+        loadChatConversation(selectedChatId);
 
     } catch (error) {
         console.error("Error resolving chat:", error);
